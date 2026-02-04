@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surveillant - Gestion des Absences</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/global-responsive.css">
+    <script src="js/responsive-manager.js"></script>
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --header-height: 70px;
+            --primary: #4338ca;
+            --primary-light: #eef2ff;
+            --bg: #f8fafc;
+            --white: #ffffff;
+            --text: #1e293b;
+            --border: #e2e8f0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--primary);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            /* Added height */
+            overflow-y: auto;
+            /* Added for vertical scrolling */
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 10px 0;
+            flex: 1;
+        }
+
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            padding: 15px 25px;
+            color: #cbd5e1;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+
+        .sidebar-menu li a:hover,
+        .sidebar-menu li a.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .sidebar-menu li a i {
+            margin-right: 15px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        header {
+            height: var(--header-height);
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .container {
+            padding: 30px;
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 25px;
+        }
+
+        .page-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px;
+            background: #f8fafc;
+            color: #64748b;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.9rem;
+        }
+
+        .presence-toggle {
+            width: 40px;
+            height: 20px;
+            background: #cbd5e1;
+            border-radius: 10px;
+            position: relative;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .presence-toggle::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
+        .presence-toggle.absent {
+            background: #ef4444;
+        }
+
+        .presence-toggle.absent::after {
+            left: 22px;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-present {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-absent {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* MODAL STYLES */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+            color: #475569;
+        }
+
+        .class-tile {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: 0.2s;
+            border-left: 4px solid var(--primary);
+        }
+
+        .class-tile:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary);
+        }
+
+        .class-tile .name {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--primary);
+        }
+
+        .class-tile .stats {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div style="font-weight: 700; font-size: 1.2rem;">ESC SURVEILLANCE</div>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="#" id="menu-absences" class="active" onclick="switchView('absences', this)"><i
+                        class="fas fa-calendar-times"></i> Absences & Retards</a></li>
+            <li><a href="#" id="menu-classes" onclick="switchView('classes', this)"><i class="fas fa-university"></i>
+                    Consulter les Classes</a></li>
+            <li><a href="#" id="menu-incidents" onclick="switchView('incidents', this)"><i
+                        class="fas fa-exclamation-triangle"></i> Signaler un Incident</a></li>
+            <li style="margin-top: auto;"><a href="#" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i>
+                    Déconnexion</a></li>
+        </ul>
+    </div>
+
+    <div class="main">
+        <header>
+            <i class="fas fa-bars hamburger-toggle"></i>
+            <div id="user-display" style="font-weight: 600;">SURVEILLANT</div>
+            <div id="school-display" style="font-size: 0.85rem; color: #64748b;">ÉTABLISSEMENT</div>
+        </header>
+
+        <div id="view-absences" class="view">
+            <div class="page-title">Saisie des Absences & Retards</div>
+
+            <div class="card">
+                <div
+                    style="display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr 1.5fr auto; gap: 15px; align-items: flex-end;">
+                    <div>
+                        <label style="font-weight: 600; font-size: 0.85rem;">Classe</label>
+                        <select id="class-select" class="form-control" onchange="loadStudentsForAbsence()">
+                            <option value="">-- Sélectionner une classe --</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-weight: 600; font-size: 0.85rem;">Matière</label>
+                        <select id="absence-subject" class="form-control">
+                            <option value="">-- Choisir --</option>
+                            <option value="FRANCAIS">FRANCAIS</option>
+                            <option value="MATHS">MATHS</option>
+                            <option value="H-G">H-G</option>
+                            <option value="ARABE">ARABE</option>
+                            <option value="ANGLAIS">ANGLAIS</option>
+                            <option value="SVT">SVT</option>
+                            <option value="PC">PC</option>
+                            <option value="INFORMATIQUE">INFORMATIQUE</option>
+                            <option value="DECOUVERTE">DECOUVERTE</option>
+                            <option value="EMCI">EMCI</option>
+                            <option value="EPS">EPS</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-weight: 600; font-size: 0.85rem;">Date</label>
+                        <input type="date" id="absence-date" class="form-control">
+                    </div>
+                    <div>
+                        <label style="font-weight: 600; font-size: 0.85rem;">Début</label>
+                        <input type="time" id="absence-hour" class="form-control">
+                    </div>
+                    <div>
+                        <label style="font-weight: 600; font-size: 0.85rem;">Fin</label>
+                        <input type="time" id="absence-end-hour" class="form-control">
+                    </div>
+                    <button class="btn btn-primary" onclick="saveAllAbsences()">
+                        <i class="fas fa-save"></i> Enregistrer
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div id="students-container">
+                    <div style="text-align: center; color: #94a3b8; padding: 40px;">
+                        <i class="fas fa-users" style="font-size: 3rem; margin-bottom: 15px; opacity: 0.5;"></i>
+                        <p>Veuillez sélectionner une classe pour afficher les élèves.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: CLASSES -->
+        <div id="view-classes" class="view" style="display: none;">
+            <div class="page-title">Consultation des Classes</div>
+            <div class="card">
+                <div id="classes-grid"
+                    style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
+                    <!-- Classes tiles will be injected here -->
+                </div>
+            </div>
+            <div id="class-students-list" class="card" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 id="selected-class-name">Liste des élèves</h3>
+                    <button class="btn" onclick="document.getElementById('class-students-list').style.display='none'"
+                        style="background: #f1f5f9; color: #475569;">
+                        <i class="fas fa-times"></i> Fermer
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nom Complet</th>
+                                <th>Genre</th>
+                                <th>Contact Parent</th>
+                                <th style="text-align: center;">Absences (Jours)</th>
+                                <th style="text-align: center;">Absences (Heures)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="class-students-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: INCIDENTS -->
+        <div id="view-incidents" class="view" style="display: none;">
+            <div class="page-title">Signalement d'Incidents</div>
+            <div class="card">
+                <div style="margin-bottom: 20px;">
+                    <button class="btn btn-primary" onclick="openIncidentModal()">
+                        <i class="fas fa-plus"></i> Déclarer un incident
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date/Heure</th>
+                                <th>Élève(s)</th>
+                                <th>Type</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="incidents-list-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Incident -->
+    <div id="incident-modal" class="modal-backdrop">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Signaler un Incident</h3>
+                <span style="cursor: pointer;" onclick="closeIncidentModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Élève(s) concerné(s) *</label>
+                    <select id="incident-student" class="form-control" required>
+                        <option value="">-- Choisir un élève --</option>
+                    </select>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label>Date *</label>
+                        <input type="date" id="incident-date" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Heure *</label>
+                        <input type="time" id="incident-hour" class="form-control" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Lieu *</label>
+                    <input type="text" id="incident-place" class="form-control" placeholder="Ex: Cour, Salle 4..."
+                        required>
+                </div>
+                <div class="form-group">
+                    <label>Type d'incident *</label>
+                    <select id="incident-type" class="form-control" required>
+                        <option value="Retard répété">Retard répété</option>
+                        <option value="Indiscipline">Indiscipline</option>
+                        <option value="Bagarre">Bagarre</option>
+                        <option value="Dégradation">Dégradation</option>
+                        <option value="Absence injustifiée">Absence injustifiée</option>
+                        <option value="Autre">Autre</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Description détaillée *</label>
+                    <textarea id="incident-description" class="form-control" rows="3"
+                        placeholder="Racontez les faits..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Observations écrites</label>
+                    <textarea id="incident-observation" class="form-control" rows="2"
+                        placeholder="Note complémentaire..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" style="background: #e2e8f0;" onclick="closeIncidentModal()">Annuler</button>
+                <button class="btn btn-primary" onclick="saveIncident()">Transmettre à l'Admin</button>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <script>
+        // --- NAVIGATION ---
+        let currentView = 'absences';
+        function switchView(viewId, element) {
+            currentView = viewId;
+            document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
+            const target = document.getElementById('view-' + viewId);
+            if (target) target.style.display = 'block';
+
+            document.querySelectorAll('.sidebar-menu a').forEach(a => a.classList.remove('active'));
+            if (element) element.classList.add('active');
+
+            if (viewId === 'classes') loadClassesConsultation();
+            if (viewId === 'incidents') loadIncidents();
+        }
+
+        // --- DATA HELPERS ---
+        function getLocal(key) { return JSON.parse(localStorage.getItem(key) || '[]'); }
+        function setLocal(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+
+        // --- AUTH ---
+        function checkAuth() {
+            if (localStorage.getItem('userRole') !== 'surveillant') {
+                window.location.href = 'login.html';
+                return;
+            }
+            document.getElementById('user-display').textContent = localStorage.getItem('currentUser');
+            document.getElementById('school-display').textContent = localStorage.getItem('currentInstitution') || "Établissement";
+            document.getElementById('absence-date').valueAsDate = new Date();
+
+            const now = new Date();
+            document.getElementById('absence-hour').value = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+        }
+
+        function getInstitution() {
+            return localStorage.getItem('currentInstitution');
+        }
+
+        // --- CORE LOGIC: ABSENCES ---
+        function populateClasses() {
+            const inst = getInstitution();
+            const classes = getLocal('localClasses').filter(c => c.institution === inst || !c.institution); // Fallback for old data
+            const select = document.getElementById('class-select');
+            if (!select) return;
+            select.innerHTML = '<option value="">-- Sélectionner une classe --</option>';
+            classes.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.name;
+                opt.textContent = c.name;
+                select.appendChild(opt);
+            });
+        }
+
+        function loadStudentsForAbsence() {
+            const className = document.getElementById('class-select').value;
+            const container = document.getElementById('students-container');
+            const inst = getInstitution();
+
+            if (!className) {
+                container.innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 40px;"><p>Veuillez sélectionner une classe.</p></div>';
+                return;
+            }
+
+            const students = getLocal('localStudents').filter(s => s.class === className);
+            if (students.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 40px;"><p>Aucun élève trouvé dans cette classe.</p></div>';
+                return;
+            }
+
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nom complet</th>
+                            <th style="text-align: center;">Abs. (J)</th>
+                            <th style="text-align: center;">Abs. (H)</th>
+                            <th style="text-align: center;">Type</th>
+                            <th style="text-align: center;">Présence</th>
+                            <th>Motif / Justification</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            const absences = getLocal('localAbsences');
+
+            students.forEach(s => {
+                const studentAbsences = absences.filter(a => a.studentId === s.id && a.type === 'Absence');
+                const uniqueDays = [...new Set(studentAbsences.map(a => a.date))].length;
+                const totalHours = studentAbsences.length;
+
+                html += `
+                    <tr data-student-id="${s.id}">
+                        <td style="font-weight: 500;">
+                            ${s.name}
+                        </td>
+                        <td style="text-align: center; font-weight: bold; color: #ef4444; font-size: 0.85rem;">${uniqueDays}</td>
+                        <td style="text-align: center; font-weight: bold; color: #f97316; font-size: 0.85rem;">${totalHours}</td>
+                        <td>
+                            <select class="form-control type-select" style="margin-top:0; font-size: 0.8rem;">
+                                <option value="Absence">Absence</option>
+                                <option value="Retard">Retard</option>
+                            </select>
+                        </td>
+                        <td style="display: flex; justify-content: center; align-items: center; height: 60px;">
+                            <div class="presence-toggle" onclick="togglePresence(this)"></div>
+                        </td>
+                        <td>
+                            <div class="absent-fields" style="display: none;">
+                                <select class="form-control motif-select" style="margin-top:0; font-size: 0.8rem;">
+                                    <option value="Non justifié">Non justifié</option>
+                                    <option value="Justifié provisoire">Justifié provisoire</option>
+                                </select>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `</tbody></table>`;
+            container.innerHTML = html;
+        }
+
+        function togglePresence(el) {
+            el.classList.toggle('absent');
+            const row = el.closest('tr');
+            const absentFields = row.querySelector('.absent-fields');
+            if (el.classList.contains('absent')) {
+                absentFields.style.display = 'block';
+            } else {
+                absentFields.style.display = 'none';
+            }
+        }
+
+        function saveAllAbsences() {
+            const className = document.getElementById('class-select').value;
+            const subject = document.getElementById('absence-subject').value;
+            const date = document.getElementById('absence-date').value;
+            const hour = document.getElementById('absence-hour').value;
+            const endHour = document.getElementById('absence-end-hour').value;
+
+            if (!className || !subject || !date || !hour) return alert("Veuillez remplir Classe, Matière, Date et Heure de début.");
+
+            const rows = document.querySelectorAll('#students-container tbody tr');
+            let absences = getLocal('localAbsences');
+            const author = localStorage.getItem('currentUser');
+            const institution = getInstitution();
+
+            let count = 0;
+            rows.forEach(row => {
+                const isAbsent = row.querySelector('.presence-toggle').classList.contains('absent');
+                if (isAbsent) {
+                    const studentId = row.getAttribute('data-student-id');
+                    const type = row.querySelector('.type-select').value;
+                    const motif = row.querySelector('.motif-select').value;
+
+                    absences.push({
+                        id: 'ABS-' + Date.now() + Math.floor(Math.random() * 1000),
+                        studentId,
+                        date,
+                        hour,
+                        endHour,
+                        subject,
+                        type,
+                        reason: motif,
+                        author,
+                        className,
+                        institution,
+                        status: 'admin_pending',
+                        createdAt: new Date().toISOString()
+                    });
+                    count++;
+                }
+            });
+
+            if (count === 0) return alert("Aucun élève marqué absent/en retard.");
+
+            setLocal('localAbsences', absences);
+            alert(`${count} enregistrement(s) transmis à l'administration.`);
+            loadStudentsForAbsence();
+        }
+
+        // --- CORE LOGIC: CLASSES ---
+        function loadClassesConsultation() {
+            const inst = getInstitution();
+            const classes = getLocal('localClasses').filter(c => c.institution === inst || !c.institution);
+            const grid = document.getElementById('classes-grid');
+            if (!grid) return;
+
+            grid.innerHTML = '';
+            classes.forEach(c => {
+                const count = getLocal('localStudents').filter(s => s.class === c.name).length;
+                grid.innerHTML += `
+                    <div class="class-tile" onclick="viewClassStudents('${c.name}')">
+                        <div class="name">${c.name}</div>
+                        <div class="stats">${count} élèves inscrits</div>
+                        <div style="margin-top: 10px; font-size: 0.75rem; color: #4338ca;">Cliquer pour voir la liste</div>
+                    </div>
+                `;
+            });
+        }
+
+        function viewClassStudents(className) {
+            const students = getLocal('localStudents').filter(s => s.class === className);
+            const absences = getLocal('localAbsences');
+            const listCard = document.getElementById('class-students-list');
+            const tbody = document.getElementById('class-students-body');
+            document.getElementById('selected-class-name').textContent = "Classe: " + className;
+
+            tbody.innerHTML = '';
+            students.forEach(s => {
+                // Calculate absences
+                const studentAbsences = absences.filter(a => a.studentId === s.id && a.type === 'Absence');
+                const uniqueDays = [...new Set(studentAbsences.map(a => a.date))].length;
+                const totalHours = studentAbsences.length;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="font-weight: 600;">${s.name}</td>
+                        <td>${s.gender || '-'}</td>
+                        <td>${s.parent || '-'}</td>
+                        <td style="text-align: center; font-weight: bold; color: #ef4444;">${uniqueDays}</td>
+                        <td style="text-align: center; font-weight: bold; color: #f97316;">${totalHours}</td>
+                    </tr>
+                `;
+            });
+            listCard.style.display = 'block';
+            listCard.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // --- CORE LOGIC: INCIDENTS ---
+        function loadIncidents() {
+            const inst = getInstitution();
+            const incidents = getLocal('localIncidents').filter(i => i.institution === inst);
+            const tbody = document.getElementById('incidents-list-body');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+            incidents.reverse().forEach(i => {
+                const studentName = getLocal('localStudents').find(s => s.id === i.studentId)?.name || i.studentId;
+                let statusBadge = `<span class="badge" style="background: #fef9c3; color: #854d0e;">En attente</span>`;
+                if (i.status === 'sanctioned') statusBadge = `<span class="badge" style="background: #fee2e2; color: #991b1b;">Sanctionné</span>`;
+                if (i.status === 'resolved') statusBadge = `<span class="badge" style="background: #dcfce7; color: #166534;">Classé</span>`;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${i.date} ${i.hour}</td>
+                        <td style="font-weight: 600;">${studentName}</td>
+                        <td>${i.type}</td>
+                        <td>${statusBadge}</td>
+                        <td>
+                            <button class="btn" onclick="alert('Description: ${i.description.replace(/'/g, "\\'")}')" style="padding: 5px 10px; font-size: 0.8rem;">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function openIncidentModal() {
+            const inst = getInstitution();
+            const students = getLocal('localStudents').filter(s => s.institution === inst || !s.institution);
+            const select = document.getElementById('incident-student');
+            select.innerHTML = '<option value="">-- Choisir un élève --</option>';
+            students.forEach(s => {
+                select.innerHTML += `<option value="${s.id}">${s.name} (${s.class})</option>`;
+            });
+
+            document.getElementById('incident-date').valueAsDate = new Date();
+            const now = new Date();
+            document.getElementById('incident-hour').value = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+
+            document.getElementById('incident-modal').style.display = 'flex';
+        }
+
+        function closeIncidentModal() { document.getElementById('incident-modal').style.display = 'none'; }
+
+        function saveIncident() {
+            const studentId = document.getElementById('incident-student').value;
+            const date = document.getElementById('incident-date').value;
+            const hour = document.getElementById('incident-hour').value;
+            const place = document.getElementById('incident-place').value;
+            const type = document.getElementById('incident-type').value;
+            const description = document.getElementById('incident-description').value;
+            const observation = document.getElementById('incident-observation').value;
+
+            if (!studentId || !date || !hour || !place || !type || !description) {
+                return alert("Veuillez remplir tous les champs obligatoires (*).");
+            }
+
+            let incidents = getLocal('localIncidents');
+            incidents.push({
+                id: 'INC-' + Date.now(),
+                studentId,
+                date,
+                hour,
+                place,
+                type,
+                description,
+                observation,
+                institution: getInstitution(),
+                author: localStorage.getItem('currentUser'),
+                status: 'pending_decision',
+                createdAt: new Date().toISOString()
+            });
+
+            setLocal('localIncidents', incidents);
+            alert("Incident signalé avec succès.");
+            closeIncidentModal();
+            loadIncidents();
+        }
+
+        window.onload = () => {
+            checkAuth();
+            populateClasses();
+        };
+    </script>
+</body>
+
+</html>

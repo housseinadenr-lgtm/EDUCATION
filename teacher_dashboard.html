@@ -1,0 +1,2180 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de bord - MENFOP</title>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SheetJS for Excel Import/Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="css/global-responsive.css">
+    <script src="js/responsive-manager.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+        :root {
+            --sidebar-width: 260px;
+            --header-height: 70px;
+            --primary-dark: #4338ca;
+            /* Indigo/Purple for Sidebar */
+            --primary-blue: #3b82f6;
+            /* Button Blue */
+            --bg-light: #f8fafc;
+            --text-dark: #333;
+            --text-gray: #6b7280;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-light);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--primary-dark);
+            color: #fff;
+            position: fixed;
+            height: 100%;
+            overflow-y: auto;
+            transition: all 0.3s;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: #312e81;
+        }
+
+        .logo-circle {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-text {
+            font-weight: bold;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+        }
+
+        .logo-container-wrapper {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            margin: 0 auto;
+            cursor: pointer;
+        }
+
+        .logo-upload-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .logo-container-wrapper:hover .logo-upload-overlay {
+            opacity: 1;
+        }
+
+        .vivid-school-name {
+            color: #ff3e00 !important;
+            /* Vivid Orange-Red */
+            font-weight: 800 !important;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(255, 62, 0, 0.2);
+            font-size: 0.95rem !important;
+        }
+
+        .user-status {
+            padding: 15px 20px;
+            font-size: 0.9rem;
+            color: #9ca3af;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            /* Change cursor to indicate clickability */
+            user-select: none;
+        }
+
+        .user-status:hover {
+            background: rgba(255, 255, 255, 0.02);
+            color: #fff;
+        }
+
+        .user-status i.chevron-icon {
+            transition: transform 0.3s;
+        }
+
+        .user-status.collapsed i.chevron-icon {
+            transform: rotate(-90deg);
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 10px 0;
+            /* Removed overflow: hidden and max-height logic to allow full scrolling */
+            transition: all 0.3s ease-in-out;
+        }
+
+        /* ... existing styles ... */
+
+        /* --- MOBILE RESPONSIVENESS --- */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                z-index: 1000;
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .header {
+                padding: 0 15px;
+            }
+
+            /* Ensure hamburger is visible and clickable if implementation exists */
+            .hamburger {
+                display: block;
+                cursor: pointer;
+            }
+        }
+
+        .sidebar-menu.hidden {
+            max-height: 0;
+            padding: 0;
+        }
+
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            padding: 10px 25px;
+            color: #cbd5e1;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .sidebar-menu li a:hover,
+        .sidebar-menu li a.active {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-menu li a i {
+            margin-right: 15px;
+            width: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .sidebar-menu li a:hover i,
+        .sidebar-menu li a.active i {
+            color: #fff;
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px 0;
+        }
+
+        .btn-logout {
+            display: flex !important;
+            align-items: center;
+            padding: 12px 25px !important;
+            color: #fca5a5 !important;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            font-weight: 500;
+            background: none;
+            border: none;
+            width: 100%;
+            cursor: pointer;
+            text-align: left;
+        }
+
+        .btn-logout:hover {
+            background: rgba(239, 68, 68, 0.2) !important;
+            color: #fff !important;
+        }
+
+        .btn-logout i {
+            margin-right: 15px;
+            width: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+            color: #fca5a5;
+        }
+
+        .btn-logout:hover i {
+            color: #fff;
+        }
+
+        /* --- MAIN CONTENT --- */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- TOP HEADER --- */
+        .header {
+            height: var(--header-height);
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .hamburger {
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #555;
+        }
+
+        .user-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            color: #1f2937;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .school-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: #4b5563;
+        }
+
+        .flag {
+            width: 25px;
+            height: auto;
+            border-radius: 2px;
+        }
+
+        .btn-profile {
+            background-color: var(--primary-blue);
+            color: white;
+            padding: 6px 15px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* --- DASHBOARD CONTENT --- */
+        .dashboard-container {
+            padding: 25px;
+        }
+
+        .breadcrumb {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-bottom: 20px;
+            text-align: right;
+        }
+
+        .page-title {
+            font-size: 1.1rem;
+            color: #6b7280;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e5e7eb;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .widgets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            align-items: start;
+        }
+
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 4px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            font-weight: 500;
+            color: #6b7280;
+            font-size: 1rem;
+        }
+
+        /* Table Styles */
+        .table-responsive {
+            width: 100%;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background: #f9fafb;
+            text-align: left;
+            padding: 12px 20px;
+            font-weight: 500;
+            color: #6b7280;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        td {
+            padding: 12px 20px;
+            border-bottom: 1px solid #f3f4f6;
+            color: #374151;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Calendar Mock */
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #fff;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .calendar-grid {
+            padding: 15px;
+        }
+
+        .cal-row {
+            display: flex;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .cal-day {
+            flex: 1;
+            padding: 5px;
+            font-size: 0.9rem;
+            color: #4b5563;
+        }
+
+        .cal-head {
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 5px;
+        }
+
+        /* --- CLASSES GRID VIEW --- */
+        .classes-view {
+            display: none;
+            padding: 25px;
+        }
+
+        .view-header-centered {
+            text-align: center;
+            padding: 15px 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e5e7eb;
+            color: #4b5563;
+            font-weight: 500;
+        }
+
+        .classes-grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            padding: 20px 0;
+        }
+
+        .class-card-dark {
+            background-color: #fefce8;
+            /* Very low intensity yellow */
+            color: #1e1b4b;
+            /* Deep Indigo for text */
+            padding: 30px 20px;
+            border-radius: 8px;
+            border: 1px solid #fef3c7;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s;
+            cursor: pointer;
+            min-height: 120px;
+        }
+
+        .class-card-dark:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1);
+            background-color: #fef9c3;
+            /* Slightly richer yellow on hover */
+        }
+
+        .class-card-dark .card-left {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
+        }
+
+        .class-card-dark .card-left .label-row {
+            font-size: 0.85rem;
+            color: #713f12;
+            /* Dark Brown-ish yellow for labels */
+            margin-bottom: 2px;
+        }
+
+        .class-card-dark .card-left .class-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #4338ca;
+            /* Sidebar purple for class name */
+        }
+
+        .class-card-dark .card-right {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 8px;
+            text-align: right;
+            padding-left: 15px;
+        }
+
+        .class-card-dark .student-count-val {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #4338ca;
+        }
+
+        .class-card-dark .student-label-text {
+            font-size: 0.85rem;
+            color: #713f12;
+            white-space: pre-wrap;
+            line-height: 1.2;
+            text-align: left;
+        }
+
+        /* --- MODAL STYLES --- */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal {
+            background: #fff;
+            width: 90%;
+            max-width: 700px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                transform: translateY(-30px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fafc;
+        }
+
+        .modal-header h3 {
+            font-size: 1.1rem;
+            color: #4b5563;
+            font-weight: 600;
+        }
+
+        .close-modal {
+            cursor: pointer;
+            color: #9ca3af;
+            font-size: 1.2rem;
+            transition: color 0.2s;
+        }
+
+        .close-modal:hover {
+            color: #ef4444;
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-size: 0.85rem;
+            color: #4b5563;
+            font-weight: 500;
+        }
+
+        .form-group label span {
+            color: #ef4444;
+        }
+
+        .form-control {
+            padding: 10px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-blue);
+        }
+
+        .file-upload-container {
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .file-upload-btn {
+            background: #f3f4f6;
+            padding: 10px 20px;
+            border-right: 1px solid #e5e7eb;
+            font-size: 0.85rem;
+            color: #4b5563;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .btn-excel {
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-export {
+            background-color: #f8fafc;
+            color: #475569;
+        }
+
+        .btn-export:hover {
+            background-color: #f1f5f9;
+            border-color: #cbd5e1;
+            color: #1e293b;
+        }
+
+        .btn-import {
+            background-color: #eff6ff;
+            color: #2563eb;
+            border-color: #bfdbfe;
+        }
+
+        .btn-import:hover {
+            background-color: #dbeafe;
+            border-color: #93c5fd;
+        }
+
+        .file-name-display {
+            padding: 0 15px;
+            font-size: 0.85rem;
+            color: #9ca3af;
+            flex: 1;
+        }
+
+        .modal-footer {
+            padding: 20px 25px;
+            background: #f8fafc;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            border-top: 1px solid #eee;
+        }
+
+        .btn-cancel {
+            background: #f3f4f6;
+            color: #4b5563;
+            padding: 10px 25px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-submit {
+            background: #1e2129;
+            color: white;
+            padding: 10px 25px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+        }
+
+        /* --- DEVOIRS VIEW --- */
+        .homework-view {
+            display: none;
+            padding: 25px;
+        }
+
+        .homework-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .btn-add-homework {
+            background-color: #4338ca;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-add-homework:hover {
+            background-color: #3730a3;
+        }
+
+        .btn-download {
+            background-color: #f1f5f9;
+            color: #3b82f6;
+            border: 1px solid #e2e8f0;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-download:hover {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        .btn-download:hover {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        .btn-edit {
+            background-color: #f0fdf4;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+
+        .btn-edit:hover {
+            background-color: #22c55e;
+            color: white;
+        }
+
+        .btn-delete {
+            background-color: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+
+        .btn-delete:hover {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-ongoing {
+            background-color: #f0fdf4;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .status-past {
+            background-color: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        /* --- ABSENCE VIEW --- */
+        .absence-view {
+            display: none;
+            padding: 25px;
+        }
+
+        .highlight-text {
+            background-color: #4ade80;
+            /* Brighter green for words */
+            color: #064e3b;
+            font-weight: bold;
+            padding: 0 2px;
+            border-radius: 4px;
+        }
+
+        /* View Transition Animation */
+        .view {
+            animation: fadeInView 0.5s ease;
+        }
+
+        @keyframes fadeInView {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .info-box {
+            background: rgba(239, 246, 255, 1);
+            border-left: 5px solid #3b82f6;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .info-box i {
+            color: #3b82f6;
+            font-size: 1.2rem;
+        }
+
+        .info-box-text {
+            font-size: 0.9rem;
+            color: #1e3a8a;
+            font-weight: 500;
+        }
+
+        .info-box-text strong {
+            color: #1e40af;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-container-wrapper" onclick="document.getElementById('logo-upload-input').click()">
+                <div class="logo-circle">
+                    <img id="sidebar-logo-img"
+                        src="https://menfop.gouv.dj/wp-content/uploads/2021/05/cropped-logo-menfop-1.png"
+                        alt="MENFOP Logo" style="width: 80%; height: auto;">
+                </div>
+                <div class="logo-upload-overlay">
+                    <i class="fas fa-camera"></i>
+                </div>
+            </div>
+            <input type="file" id="logo-upload-input" style="display: none;" accept="image/*"
+                onchange="handleLogoChange(this)">
+            <div class="logo-text" id="display-sidebar-institution"
+                style="color: white; font-weight: bold; margin-top: 10px;">ÉTABLISSEMENT</div>
+        </div>
+
+        <div class="user-status" onclick="toggleMenu()" title="Réduire/Agrandir le menu"
+            style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-user-circle"></i>
+                <span style="color: #cbd5e1;">Portail enseignants</span>
+            </div>
+            <i class="fas fa-chevron-right chevron-icon" style="font-size: 0.7rem; color: #cbd5e1;"></i>
+        </div>
+
+        <ul class="sidebar-menu" id="teacher-menu">
+            <li><a href="#" class="active" onclick="switchView('dashboard', this)"><i class="fas fa-th-large"></i>
+                    Tableau de bord</a></li>
+            <li><a href="#" onclick="switchView('classes', this)"><i class="fas fa-chalkboard-teacher"></i> Voir les
+                    classes</a></li>
+            <li><a href="#" onclick="switchView('homework', this)"><i class="fas fa-book"></i> Devoirs</a></li>
+            <li><a href="#" onclick="switchView('absence', this)"><i class="fas fa-user-clock"></i> Absence des
+                    enseignants</a></li>
+            <li><a href="#" onclick="switchView('notes', this)"><i class="fas fa-edit"></i> Saisie de notes</a></li>
+            <li><a href="#"><i class="fas fa-file-alt"></i> Gestion des tests</a></li>
+            <li><a href="#"><i class="fas fa-users"></i> Membres coordinateurs</a></li>
+            <li><a href="#"><i class="fas fa-info-circle"></i> Fiche de renseignement</a></li>
+            <li><a href="#"><i class="fas fa-user-times"></i> Exclusion des élèves</a></li>
+        </ul>
+
+        <div class="sidebar-footer">
+            <button class="btn-logout" onclick="handleLogout()">
+                <i class="fas fa-sign-out-alt"></i> Déconnexion
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Header -->
+        <header class="header">
+            <div class="header-left">
+                <i class="fas fa-bars hamburger-toggle"></i>
+                <div class="user-name" id="display-user-name">CHARGEMENT...</div>
+            </div>
+            <div class="header-right">
+                <div id="display-institution-name" class="vivid-school-name"
+                    style="font-size: 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; background: #fff1f2; padding: 6px 15px; border-radius: 20px; display: flex; align-items: center; gap: 8px; border: 2px solid #ff3e00;">
+                    <i class="fas fa-school" style="color: #ff3e00;"></i> <span
+                        id="institution-name-header">ÉTABLISSEMENT</span>
+                </div>
+                <!-- Djibouti Flag -->
+                <img src="https://flagcdn.com/w40/dj.png" alt="Djibouti Flag" class="flag"
+                    style="height: 18px; border-radius: 2px;">
+                <a href="#" class="btn-profile">Profil</a>
+            </div>
+        </header>
+
+        <!-- Dynamic Content -->
+        <div class="dashboard-container">
+            <!-- Live Check-in Widget -->
+            <div id="check-in-section" class="card"
+                style="margin-bottom: 25px; padding: 20px; background: #eff6ff; border: 1px solid #dbeafe; border-radius: 12px;">
+                <div
+                    style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                    <div>
+                        <div
+                            style="font-weight: 700; color: #1e40af; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-map-marker-alt"></i> Pointage de Présence en Classe
+                        </div>
+                        <div style="font-size: 0.85rem; color: #60a5fa; margin-top: 4px;">Signalez votre arrivée en
+                            salle pour le suivi administratif.</div>
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <select id="check-in-class" class="form-control" style="width: 200px; border-color: #bfdbfe;">
+                            <option value="">-- Choisir la classe --</option>
+                            <!-- Dynamic assignments -->
+                        </select>
+                        <button onclick="teacherCheckIn()" class="btn-submit"
+                            style="background:#2563eb; padding: 10px 20px; border-radius: 8px; font-weight: 600;">
+                            <i class="fas fa-check-circle"></i> Valider ma présence
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Title and Breadcrumbs Row -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                <div class="page-title" style="margin-bottom: 0; border-bottom: none;">
+                    TABLEAU DE BORD DE L'ENSEIGNANT
+                </div>
+                <div class="breadcrumb" style="margin-bottom: 0;">
+                    Tableaux de bord > <span style="color: #9ca3af;">Tableau de bord de l'enseignant</span>
+                </div>
+            </div>
+
+            <!-- Widgets Grid -->
+            <div class="widgets-grid">
+                <!-- Left Column: Schedule + Calendar -->
+                <div class="left-column">
+                    <!-- Widget 1: Horaires (Table) -->
+                    <div class="card">
+                        <div class="card-header">
+                            Horaires du <span id="selected-date-display"
+                                style="color: var(--primary-blue); font-weight: bold;">--/--/----</span>
+                        </div>
+                        <div class="table-responsive">
+                            <table id="schedule-table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Classe</th>
+                                        <th>Matière</th>
+                                        <th>Heure</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="schedule-body">
+                                    <!-- Empty state matching screenshot -->
+                                    <tr>
+                                        <td colspan="4" style="height: 100px;"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Widget 3: Calendar -->
+                    <div class="card">
+                        <div class="calendar-header">
+                            <span>Horaires</span>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <button onclick="changeMonth(-1)"
+                                    style="border:none; background:none; cursor:pointer; color: #6b7280;"><i
+                                        class="fas fa-chevron-left"></i></button>
+                                <select id="calendar-month-select"
+                                    style="padding: 4px; border-radius: 4px; border: 1px solid #ddd; font-size: 0.85rem; outline: none;">
+                                    <option value="0">Janvier</option>
+                                    <option value="1">Février</option>
+                                    <option value="2">Mars</option>
+                                    <option value="3">Avril</option>
+                                    <option value="4">Mai</option>
+                                    <option value="5">Juin</option>
+                                    <option value="6">Juillet</option>
+                                    <option value="7">Août</option>
+                                    <option value="8">Septembre</option>
+                                    <option value="9">Octobre</option>
+                                    <option value="10">Novembre</option>
+                                    <option value="11">Décembre</option>
+                                </select>
+                                <span id="calendar-year-display" style="font-weight: bold; color: #374151;">2026</span>
+                                <button onclick="changeMonth(1)"
+                                    style="border:none; background:none; cursor:pointer; color: #6b7280;"><i
+                                        class="fas fa-chevron-right"></i></button>
+                            </div>
+                        </div>
+                        <div class="calendar-grid">
+                            <div class="cal-row">
+                                <div class="cal-day cal-head">DIM</div>
+                                <div class="cal-day cal-head">LUN</div>
+                                <div class="cal-day cal-head">MAR</div>
+                                <div class="cal-day cal-head">MER</div>
+                                <div class="cal-day cal-head">JEU</div>
+                                <div class="cal-day cal-head">VEN</div>
+                                <div class="cal-day cal-head">SAM</div>
+                            </div>
+                            <div id="calendar-days"
+                                style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px;">
+                                <!-- Days -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Classes -->
+                <!-- Widget 2: Classes avec nombre d'étudiants -->
+                <div class="card">
+                    <div class="card-header">Classes avec nombre d'étudiants</div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Classe</th>
+                                    <th>Matière</th>
+                                    <th>Nombre d'étudiants</th>
+                                </tr>
+                            </thead>
+                            <tbody id="classes-body">
+                                <!-- Données chargées dynamiquement -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="classes-view" class="classes-view">
+            <div class="homework-header">
+                <div class="page-title" style="margin-bottom: 0; border-bottom: none;">
+                    Voir les classes
+                </div>
+                <div style="position: relative;">
+                    <i class="fas fa-search"
+                        style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.9rem;"></i>
+                    <input type="text" id="search-classes" onkeyup="filterClasses()"
+                        placeholder="Chercher une classe..."
+                        style="padding: 10px 15px 10px 35px; border: 1px solid #e2e8f0; border-radius: 8px; width: 300px; font-size: 0.9rem; background-color: #fef9c3;">
+                </div>
+            </div>
+            <div id="classes-grid-content" class="classes-grid-container">
+                <!-- Classes cards will be injected here -->
+            </div>
+        </div>
+
+        <div id="homework-view" class="homework-view">
+            <div class="homework-header">
+                <div class="page-title" style="margin-bottom: 0; border-bottom: none;">
+                    Devoirs Envoyés
+                </div>
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <div style="position: relative;">
+                        <i class="fas fa-search"
+                            style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.9rem;"></i>
+                        <input type="text" id="search-homework" onkeyup="filterHomework()"
+                            placeholder="Chercher un devoir..."
+                            style="padding: 10px 15px 10px 35px; border: 1px solid #e2e8f0; border-radius: 8px; width: 300px; font-size: 0.9rem; background-color: #fef9c3;">
+                    </div>
+                    <button class="btn-add-homework" onclick="openHomeworkModal()">
+                        <i class="fas fa-plus"></i> Envoyer un devoir
+                    </button>
+                </div>
+            </div>
+
+            <div id="homework-list-container">
+                <!-- Data will be loaded here -->
+                <div class="card" style="padding: 40px; text-align: center; color: #9ca3af;" id="homework-empty-state">
+                    <i class="fas fa-folder-open" style="font-size: 3rem; margin-bottom: 15px;"></i>
+                    <p>Aucun devoir envoyé pour le moment.</p>
+                </div>
+
+                <div class="card" id="homework-table-card" style="display: none;">
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Matière</th>
+                                    <th>Classe</th>
+                                    <th>Date Début</th>
+                                    <th>Date Limite</th>
+                                    <th>Durée</th>
+                                    <th>Statut</th>
+                                    <th>Fichier</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="homework-list-body">
+                                <!-- Homework rows will be injected here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="absence-view" class="absence-view" style="display: none;">
+            <div class="homework-header">
+                <div class="page-title" style="margin-bottom: 0; border-bottom: none;">
+                    Mes Absences
+                </div>
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <div style="position: relative;">
+                        <i class="fas fa-search"
+                            style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.9rem;"></i>
+                        <input type="text" id="search-absences" onkeyup="filterAbsencesTeacher()"
+                            placeholder="Chercher une absence..."
+                            style="padding: 10px 15px 10px 35px; border: 1px solid #e2e8f0; border-radius: 8px; width: 300px; font-size: 0.9rem; background-color: #fef9c3;">
+                    </div>
+                    <button class="btn-add-homework" onclick="openAbsenceModal()" style="background-color: #ef4444;">
+                        <i class="fas fa-exclamation-triangle"></i> Signaler une absence
+                    </button>
+                </div>
+            </div>
+
+            <div
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                <div class="card" style="display: flex; align-items: center; gap: 20px; padding: 25px;">
+                    <div
+                        style="background: #fef2f2; color: #ef4444; width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                        <i class="fas fa-user-times"></i>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.9rem; color: #64748b;">Total absences</div>
+                        <div id="total-absences-count" style="font-size: 1.8rem; font-weight: bold; color: #1e293b;">0
+                        </div>
+                    </div>
+                </div>
+                <div class="card" style="display: flex; align-items: center; gap: 20px; padding: 25px;">
+                    <div
+                        style="background: #fff7ed; color: #f97316; width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                        <i class="fas fa-calendar-week"></i>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.9rem; color: #64748b;">Cette semaine (h)</div>
+                        <div id="weekly-absences-hours" style="font-size: 1.8rem; font-weight: bold; color: #1e293b;">0h
+                        </div>
+                    </div>
+                </div>
+                <div class="card" style="display: flex; align-items: center; gap: 20px; padding: 25px;">
+                    <div
+                        style="background: #f0f9ff; color: #0ea5e9; width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.9rem; color: #64748b;">Ce mois (h)</div>
+                        <div id="monthly-absences-hours" style="font-size: 1.8rem; font-weight: bold; color: #1e293b;">
+                            0h</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Date</th>
+                                <th>Heures</th>
+                                <th>Relevée par</th>
+                                <th>Justification / Motif</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="absence-list-body">
+                            <!-- Absence rows will be injected here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="notes-view" class="notes-view" style="display: none;">
+            <!-- Step 1: Class Selection -->
+            <div id="notes-step-1" class="view-step">
+                <div class="homework-header">
+                    <div class="page-title" style="margin-bottom: 0; border-bottom: none;">
+                        Saisie de notes - Sélection de la classe
+                    </div>
+                    <div style="position: relative;">
+                        <i class="fas fa-search"
+                            style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.9rem;"></i>
+                        <input type="text" id="search-notes-classes" onkeyup="filterNotesClasses()"
+                            placeholder="Chercher une classe..."
+                            style="padding: 10px 15px 10px 35px; border: 1px solid #e2e8f0; border-radius: 8px; width: 300px; font-size: 0.9rem; background-color: #fef9c3;">
+                    </div>
+                </div>
+
+                <div id="grading-window-warning"
+                    style="display: none; background: #fee2e2; color: #991b1b; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 5px solid #ef4444; align-items: center; gap: 15px;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 1.5rem;"></i>
+                    <div>
+                        <strong>Action Requise :</strong> La période de saisie des notes est actuellement fermée.
+                        Vous pouvez consulter les notes mais vous ne pouvez pas les modifier.
+                        <div id="grading-window-dates" style="font-size: 0.85rem; margin-top: 5px;"></div>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <i class="fas fa-info-circle"></i>
+                    <div class="info-box-text">
+                        <strong>Mode Saisie Dynamique :</strong> Sélectionnez une classe pour commencer la saisie des
+                        notes.
+                        Le système enregistre automatiquement vos modifications en temps réel.
+                    </div>
+                </div>
+
+                <div id="notes-classes-grid" class="classes-grid-container">
+                    <!-- Class cards will be injected here -->
+                </div>
+            </div>
+
+            <!-- Step 2: Grade Sheet -->
+            <div id="notes-step-2" class="view-step" style="display: none;">
+                <div class="homework-header">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <button class="btn-cancel" onclick="backToNotesClasses()"
+                            style="padding: 8px 15px; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-arrow-left"></i> Retour
+                        </button>
+                        <div class="page-title" style="margin-bottom: 0; border-bottom: none;"
+                            id="active-notes-class-title">
+                            Saisie de notes : [Classe]
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <div style="position: relative;">
+                            <i class="fas fa-search"
+                                style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.8rem;"></i>
+                            <input type="text" id="search-grades" onkeyup="filterGrades()"
+                                placeholder="Chercher un élève..."
+                                style="padding: 10px 15px 10px 35px; border: 1px solid #e2e8f0; border-radius: 8px; width: 250px; font-size: 0.9rem; background-color: #fef9c3;">
+                        </div>
+                        <select id="notes-type-select" class="form-control" onchange="loadGradeSheet()"
+                            style="width: 200px; height: 42px;">
+                            <option value="T1">Trimestre 1</option>
+                            <option value="T2">Trimestre 2</option>
+                            <option value="T3">Trimestre 3</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="grading-window-warning-step2"
+                    style="display: none; background: #fee2e2; color: #991b1b; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 5px solid #ef4444; align-items: center; gap: 15px;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 1.5rem;"></i>
+                    <div>
+                        <strong>Action Requise :</strong> La période de saisie pour ce trimestre est fermée.
+                        <div id="grading-window-dates-step2" style="font-size: 0.85rem; margin-top: 5px;"></div>
+                    </div>
+                </div>
+
+                <div class="card" id="grade-sheet-container">
+                    <div
+                        style="padding: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #f8fafc;">
+                        <h4 style="color: #4338ca; margin: 0;"><i class="fas fa-list"></i> Liste des élèves</h4>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn-excel btn-export" onclick="exportGradesToExcel()">
+                                <i class="fas fa-file-export"></i> Exporter (Excel)
+                            </button>
+
+                            <button class="btn-submit" onclick="saveGrades()"
+                                style="background-color: #22c55e; padding: 10px 25px; font-weight: 600;">
+                                <i class="fas fa-save"></i> Enregistrer les notes
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- GLOBAL COMPETENCE INPUT -->
+                    <div style="padding: 15px; background: #fff; border-bottom: 1px solid #eee;">
+                        <label style="font-weight: 600; color: #4b5563; display: block; margin-bottom: 5px;">Compétences
+                            (Global pour ce trimestre) :</label>
+                        <input type="text" id="global-competencies" class="form-control"
+                            placeholder="Entrez les compétences acquises pour ce trimestre..." style="width: 100%;">
+                    </div>
+
+                    <div class="table-responsive">
+                        <table style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px; text-align: center;">Rang</th>
+                                    <th style="width: 100px;">ID</th>
+                                    <th>Nom de l'élève</th>
+                                    <th style="width: 65px; text-align: center;">Dev 1</th>
+                                    <th style="width: 65px; text-align: center;">Dev 2</th>
+                                    <th style="width: 65px; text-align: center;">Dev 3</th>
+                                    <th style="width: 65px; text-align: center;">Dev 4</th>
+                                    <th style="width: 65px; text-align: center;">Dev 5</th>
+                                    <th style="width: 80px; text-align: center;">Moyenne</th>
+                                    <th>Appréciation automatique</th>
+                                </tr>
+                            </thead>
+                            <tbody id="grade-list-body">
+                                <!-- Students list with inputs -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Prendre les devoirs -->
+    <div id="homework-modal" class="modal-backdrop">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Prendre les devoirs</h3>
+                <span class="close-modal" onclick="closeHomeworkModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="homework-form">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Matière<span>*</span></label>
+                            <select class="form-control" id="hw-subject">
+                                <!-- Matières chargées dynamiquement -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>La liste des classes<span>*</span></label>
+                            <select class="form-control" id="hw-class">
+                                <option value="">Sélectionner...</option>
+                                <!-- Classes chargées dynamiquement -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Date de début<span>*</span></label>
+                            <input type="date" class="form-control" id="hw-start-date">
+                        </div>
+                        <div class="form-group">
+                            <label>Limite de date<span>*</span></label>
+                            <input type="date" class="form-control" id="hw-limit-date">
+                        </div>
+                        <div class="form-group">
+                            <label>Durée<span>*</span></label>
+                            <select class="form-control" id="hw-duration">
+                                <option value="">Sélectionner...</option>
+                                <option>30 min</option>
+                                <option>1 heure</option>
+                                <option>1 heure 30 min</option>
+                                <option>2 heures</option>
+                                <option>3 heures</option>
+                                <option>4 heures</option>
+                                <option>Illimité</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="file-upload-container">
+                            <label class="file-upload-btn" for="file-input">Choisir un fichier</label>
+                            <input type="file" id="file-input" style="display: none;" onchange="updateFileName(this)">
+                            <span class="file-name-display" id="file-name">Aucun fichier n'a été sélectionné</span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeHomeworkModal()">Annuler</button>
+                <button class="btn-submit" onclick="submitHomework()">Envoyer le travail</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Détails de la classe -->
+    <div id="class-details-modal" class="modal-backdrop">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="details-class-name">Détails de la classe</h3>
+                <span class="close-modal" onclick="closeClassDetails()">&times;</span>
+            </div>
+            <div class="modal-body" style="max-height: 400px; overflow-y: auto;">
+                <div style="display: flex; gap: 20px; align-items: flex-start; margin-bottom: 20px;">
+                    <div style="background: var(--bg-light); padding: 15px; border-radius: 8px; flex: 1;">
+                        <div style="font-size: 0.8rem; color: #6b7280; text-transform: uppercase;">Professeur Principal
+                        </div>
+                        <div style="font-weight: bold; margin-top: 5px;" id="details-principal-teacher">-</div>
+                    </div>
+                    <div style="background: var(--bg-light); padding: 15px; border-radius: 8px; flex: 1;">
+                        <div style="font-size: 0.8rem; color: #6b7280; text-transform: uppercase;">Nombre d'élèves</div>
+                        <div style="font-weight: bold; margin-top: 5px;" id="details-student-count">0</div>
+                    </div>
+                </div>
+
+                <h4 style="margin-bottom: 10px; color: #4b5563; font-size: 0.95rem;">Liste des élèves</h4>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Nom de l'élève</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody id="details-students-list">
+                            <!-- Mock students will be injected here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeClassDetails()">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Signaler Absence -->
+    <div id="absence-modal" class="modal-backdrop">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="abs-modal-title">Signaler une absence</h3>
+                <span class="close-modal" onclick="closeAbsenceModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="absence-form">
+                    <div id="abs-noted-info"
+                        style="display:none; background:#fff7ed; padding:10px; border-radius:8px; margin-bottom:15px; border-left:4px solid #f97316;">
+                        <i class="fas fa-info-circle"></i> Cette absence a été relevée par <strong
+                            id="abs-noted-by-author">...</strong>. Veuillez fournir une justification.
+                    </div>
+                    <div class="form-group">
+                        <label>Date de l'absence<span>*</span></label>
+                        <input type="date" id="abs-date" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Nombre d'heures<span>*</span></label>
+                        <input type="number" id="abs-hours" class="form-control" placeholder="Ex: 2" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label id="abs-reason-label">Explications / Motif de l'absence<span>*</span></label>
+                        <textarea id="abs-reason" class="form-control" rows="4"
+                            placeholder="Veuillez justifier l'absence..." required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeAbsenceModal()">Annuler</button>
+                <button class="btn-submit" id="abs-submit-btn" onclick="submitAbsence()"
+                    style="background-color: #ef4444;">Confirmer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+
+    <script>
+        // --- 0. SECURITY CHECK ---
+        function checkAuth() {
+            const currentRole = localStorage.getItem('userRole');
+            const currentName = localStorage.getItem('currentUser');
+
+            if (!currentName || currentRole !== 'teacher') {
+                window.location.href = 'login.html';
+                return false;
+            }
+            return true;
+        }
+
+        // Run immediately
+        checkAuth();
+
+        // Run interval check (every 2 minutes)
+        setInterval(checkAuth, 120000);
+
+        // Run on storage event (other tabs)
+        window.addEventListener('storage', () => {
+            checkAuth();
+        });
+
+        // (function () { removed to expose functions to global scope
+
+        // Existing IIFE or initialization logic if any
+
+
+        // --- DATA HELPERS ---
+        const getLocal = (key) => JSON.parse(localStorage.getItem(key) || '[]');
+        const setLocal = (key, val) => localStorage.setItem(key, JSON.stringify(val));
+        const getTeacherId = () => localStorage.getItem('currentUserId');
+
+        // --- NAVIGATION ---
+        let currentViewName = 'dashboard';
+
+        function switchView(viewName, element) {
+            currentViewName = viewName;
+            document.querySelectorAll('.view, .dashboard-container, .classes-view, .homework-view, .absence-view, .notes-view').forEach(v => v.style.display = 'none');
+
+            const viewMap = {
+                'dashboard': '.dashboard-container',
+                'classes': '#classes-view',
+                'homework': '#homework-view',
+                'absence': '#absence-view',
+                'notes': '#notes-view'
+            };
+
+            const target = document.querySelector(viewMap[viewName]);
+            if (target) target.style.display = 'block';
+
+            document.querySelectorAll('.sidebar-menu a').forEach(a => a.classList.remove('active'));
+            if (element) element.classList.add('active');
+
+            refreshAppContent();
+        }
+
+        function refreshAppContent() {
+            if (currentViewName === 'dashboard') updateDashboardStats();
+            else if (currentViewName === 'classes') fetchClasses();
+            else if (currentViewName === 'notes') backToNotesClasses();
+        }
+
+        // --- DASHBOARD ---
+        function updateDashboardStats() {
+            const teacherId = getTeacherId();
+            let assignments = getLocal('localAssignments').filter(a => a.teacherId === teacherId);
+
+            // DEMO: Inject data if empty so the user sees something
+            if (assignments.length === 0) {
+                assignments = [
+                    { className: '3ème A', subject: 'Mathématiques', teacherId: teacherId, principalId: 'DEMO-P', type: 'demo' },
+                    { className: '4ème B', subject: 'Physique', teacherId: teacherId, principalId: 'DEMO-P', type: 'demo' },
+                    { className: '5ème C', subject: 'Mathématiques', teacherId: teacherId, principalId: 'DEMO-P', type: 'demo' }
+                ];
+                // Save demo assignments only if we are in a demo context (optional, but good for persistence)
+                const allAssignments = getLocal('localAssignments');
+                if (!allAssignments.some(a => a.teacherId === teacherId)) {
+                    allAssignments.push(...assignments);
+                    setLocal('localAssignments', allAssignments);
+                }
+            }
+
+            const classes = [...new Set(assignments.map(a => a.className))];
+
+            const countClassesEl = document.getElementById('total-classes-count');
+            if (countClassesEl) countClassesEl.textContent = classes.length;
+
+            const tbody = document.getElementById('classes-body');
+            if (tbody) {
+                tbody.innerHTML = '';
+                assignments.forEach((a, i) => {
+                    // Mock students for demo classes
+                    let students = getLocal('localStudents').filter(s => s.class === a.className && s.principalId === a.principalId);
+                    if (students.length === 0 && a.type === 'demo') {
+                        students = new Array(Math.floor(Math.random() * 10) + 20).fill(0); // Mock count 20-30
+                    }
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${i + 1}</td>
+                            <td style="font-weight:bold;">${a.className}</td>
+                            <td><span style="background:#e0e7ff; color:#3730a3; padding:2px 8px; border-radius:8px; font-size:12px; font-weight:bold;">${a.subject}</span></td>
+                            <td><span style="background:#f0fdf4; color:#166534; padding:4px 12px; border-radius:12px; font-weight:bold;">${students.length}</span></td>
+                        </tr>
+                    `;
+                });
+            }
+
+            // Also ensure global date is set here to be safe
+            const dateDisplay = document.getElementById('selected-date-display');
+            if (dateDisplay) dateDisplay.textContent = new Date().toLocaleDateString('fr-FR');
+        }
+
+        // --- CLASSES VIEW ---
+        async function fetchClasses() {
+            const grid = document.getElementById('classes-grid-content');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            const teacherId = getTeacherId();
+            const assignments = getLocal('localAssignments').filter(a => a.teacherId === teacherId);
+
+            if (assignments.length === 0) {
+                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #94a3b8;">Aucune classe ne vous a été attribuée.</div>';
+                return;
+            }
+
+            assignments.forEach(a => {
+                const students = getLocal('localStudents').filter(s => s.class === a.className && s.principalId === a.principalId);
+                grid.innerHTML += `
+                    <div class="class-card-dark" onclick="openClassDetails('${a.className}', '${a.principalId}')">
+                        <div class="card-left">
+                            <div class="label-row">Classe attribuée :</div>
+                            <div class="class-name">${a.className}</div>
+                            <div style="font-size:0.8rem; color:#64748b; margin-top:5px;">Matière: ${a.subject}</div>
+                        </div>
+                        <div class="card-right">
+                            <span class="student-count-val">${students.length}</span>
+                            <span class="student-label-text">Élèves\ninscrits</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function filterClasses() {
+            const query = document.getElementById('search-classes').value.toLowerCase();
+            const teacherId = getTeacherId();
+            const assignments = getLocal('localAssignments').filter(a => a.teacherId === teacherId);
+            const filtered = assignments.filter(a => a.className.toLowerCase().includes(query));
+
+            const grid = document.getElementById('classes-grid-content');
+            grid.innerHTML = '';
+            filtered.forEach(a => {
+                const students = getLocal('localStudents').filter(s => s.class === a.className && s.principalId === a.principalId);
+                grid.innerHTML += `
+                    <div class="class-card-dark" onclick="openClassDetails('${a.className}', '${a.principalId}')">
+                        <div class="card-left">
+                            <div class="label-row">Classe attribuée :</div>
+                            <div class="class-name">${highlightWord(a.className, query)}</div>
+                        </div>
+                        <div class="card-right">
+                            <span class="student-count-val">${students.length}</span>
+                            <span class="student-label-text">Élèves\ninscrits</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function openClassDetails(className, principalId) {
+            document.getElementById('details-class-name').textContent = className;
+            const students = getLocal('localStudents').filter(s => s.class === className && s.principalId === principalId);
+            document.getElementById('details-student-count').textContent = students.length;
+            document.getElementById('details-principal-teacher').textContent = localStorage.getItem('currentUser') || 'Enseignant';
+
+            const list = document.getElementById('details-students-list');
+            list.innerHTML = '';
+            students.forEach((s, i) => {
+                list.innerHTML += `<tr><td>${i + 1}</td><td style="font-weight:600;">${s.name}</td><td><span class="status-badge status-ongoing">Actif</span></td></tr>`;
+            });
+            document.getElementById('class-details-modal').style.display = 'flex';
+        }
+
+        function closeClassDetails() { document.getElementById('class-details-modal').style.display = 'none'; }
+
+        // --- NOTES / GRADING ---
+        let currentSelectedClass = '';
+        let currentSelectedPrincipalId = '';
+        let currentSelectedSubject = '';
+
+        function backToNotesClasses() {
+            document.getElementById('notes-step-1').style.display = 'block';
+            document.getElementById('notes-step-2').style.display = 'none';
+            populateNotesClassCards();
+        }
+
+        function populateNotesClassCards(query = '') {
+            const grid = document.getElementById('notes-classes-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            const teacherId = getTeacherId();
+            const assignments = getLocal('localAssignments').filter(a => a.teacherId === teacherId);
+
+            const filtered = assignments.filter(a => a.className.toLowerCase().includes(query.toLowerCase()));
+
+            filtered.forEach(a => {
+                const students = getLocal('localStudents').filter(s => s.class === a.className && s.principalId === a.principalId);
+                grid.innerHTML += `
+                    <div class="class-card-dark" onclick="selectClassForNotes('${a.className}', '${a.subject}', '${a.principalId}')">
+                        <div class="card-left">
+                            <div class="label-row">Notation pour :</div>
+                            <div class="class-name">${highlightWord(a.className, query)}</div>
+                            <div style="font-size:0.8rem; color:#64748b; margin-top:5px;">Matière: ${a.subject}</div>
+                        </div>
+                        <div class="card-right">
+                            <span class="student-count-val">${students.length}</span>
+                            <span class="student-label-text">Élèves</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function selectClassForNotes(className, subject, principalId) {
+            currentSelectedClass = className;
+            currentSelectedSubject = subject;
+            currentSelectedPrincipalId = principalId;
+            document.getElementById('active-notes-class-title').textContent = `Saisie de notes : ${className} (${subject})`;
+            document.getElementById('notes-step-1').style.display = 'none';
+            document.getElementById('notes-step-2').style.display = 'block';
+            loadGradeSheet();
+        }
+
+        // --- CONFIG & VALIDATION ---
+        async function getGradingConfig() {
+            // Try fetch API, fallback localStorage
+            try {
+                const res = await fetch('/academic/config');
+                if (res.ok) return await res.json();
+            } catch (e) { }
+            return JSON.parse(localStorage.getItem('gradingConfig') || '{}');
+        }
+
+        async function checkGradingWindow(type) {
+            const config = await getGradingConfig();
+            const warningEl = document.getElementById('grading-window-warning');
+            const datesEl = document.getElementById('grading-window-dates');
+            const inputs = document.querySelectorAll('#grade-list-body input');
+            const saveBtn = document.querySelector('button[onclick="saveGrades()"]');
+
+            warningEl.style.display = 'none';
+            let locked = false;
+            let reason = "";
+
+            // 1. Global Lock
+            if (config.globalLock) {
+                locked = true;
+                reason = "Le verrouillage global est activé par l'administration.";
+            }
+            // 2. Trimester Window
+            else if (type && config.trimesters && config.trimesters[type]) {
+                const tri = config.trimesters[type];
+                const now = new Date();
+
+                if (!tri.start || !tri.end) {
+                    // Config incomplète => on peut décider de bloquer ou non.
+                    // Pour l'instant on laisse ouvert si pas de dates, sauf si on veut strict.
+                } else {
+                    const start = new Date(tri.start);
+                    const end = new Date(tri.end);
+                    const delay = (config.gradingDelayDays || 0) * 24 * 60 * 60 * 1000;
+                    const endWithDelay = new Date(end.getTime() + delay);
+
+                    if (now < start) {
+                        locked = true;
+                        reason = `La saisie pour ${tri.name} n'a pas encore commencé. (Début: ${start.toLocaleDateString()})`;
+                    } else if (now > endWithDelay) {
+                        locked = true;
+                        reason = `La saisie pour ${tri.name} est close. (Fin: ${endWithDelay.toLocaleDateString()})`;
+                    }
+                }
+            }
+
+            if (locked) {
+                warningEl.style.display = 'flex';
+                datesEl.textContent = reason;
+                inputs.forEach(i => i.disabled = true);
+                if (saveBtn) {
+                    saveBtn.disabled = true;
+                    saveBtn.style.opacity = "0.5";
+                    saveBtn.style.cursor = "not-allowed";
+                }
+            } else {
+                inputs.forEach(i => i.disabled = false);
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.style.opacity = "1";
+                    saveBtn.style.cursor = "pointer";
+                }
+            }
+        }
+
+        function loadGradeSheet() {
+            const tbody = document.getElementById('grade-list-body');
+            tbody.innerHTML = '';
+            const students = getLocal('localStudents').filter(s => s.class === currentSelectedClass && s.principalId === currentSelectedPrincipalId);
+            const grades = getLocal('localGrades');
+            const type = document.getElementById('notes-type-select').value;
+
+            // OPTIMIZATION: Build HTML string first
+            const htmlContent = students.map((s, i) => {
+                const studentGrades = grades.find(g => g.studentId === s.id && g.subject === currentSelectedSubject && g.type === type) || { values: [null, null, null, null, null] };
+                return `
+                    <tr data-student-id="${s.id}">
+                        <td>${i + 1}</td>
+                        <td style="font-family:monospace; font-size:0.8rem;">${s.id}</td>
+                        <td style="font-weight:600;">${s.name}</td>
+                        ${studentGrades.values.map((v, idx) => `
+                            <td><input type="number" step="0.25" min="0" max="20" class="form-control" value="${v !== null ? v : ''}" oninput="calculateRowAverage(this)" style="width:60px; text-align:center;"></td>
+                        `).join('')}
+                        <td class="row-avg" style="font-weight:bold; color:#4338ca;">-</td>
+                        <td><input type="text" class="form-control row-app" value="${studentGrades.appreciation || ''}" placeholder="Appréciation..." style="width:100%; font-size:0.85rem;"></td>
+                    </tr>
+                    `;
+            }).join('');
+
+            tbody.innerHTML = htmlContent;
+
+            // Post-render actions
+            const rows = tbody.querySelectorAll('tr');
+            rows.forEach(row => {
+                calculateRowAverage(row.querySelector('input'));
+            });
+
+            // Load Global Competence
+            const firstStudentId = students[0]?.id;
+            const firstGrade = grades.find(g => g.studentId === firstStudentId && g.subject === currentSelectedSubject && g.type === type);
+            const globalComp = document.getElementById('global-competencies');
+            if (globalComp) globalComp.value = firstGrade ? (firstGrade.competencies || '') : '';
+
+            // Check Window Validity
+            checkGradingWindow(type);
+        }
+
+
+        function calculateRowAverage(input) {
+            const row = input.closest('tr');
+            const inputs = row.querySelectorAll('input[type="number"]');
+            let sum = 0, count = 0;
+            inputs.forEach(i => {
+                if (i.value !== '') {
+                    sum += parseFloat(i.value);
+                    count++;
+                }
+            });
+            const avg = count > 0 ? (sum / count).toFixed(2) : '-';
+            row.querySelector('.row-avg').textContent = avg;
+
+            // Suggest appreciation if empty
+            const appInput = row.querySelector('.row-app');
+            if (avg !== '-' && (!appInput.value || appInput.dataset.suggested === "true")) {
+                const v = parseFloat(avg);
+                let app = '-';
+                if (v >= 16) app = "Excellent";
+                else if (v >= 14) app = "Très Bien";
+                else if (v >= 12) app = "Bien";
+                else if (v >= 10) app = "Passable";
+                else app = "Insuffisant";
+
+                appInput.value = app;
+                appInput.dataset.suggested = "true";
+            }
+        }
+
+        function saveGrades() {
+            const rows = document.querySelectorAll('#grade-list-body tr');
+            let grades = getLocal('localGrades');
+            const type = document.getElementById('notes-type-select').value;
+            const teacherName = localStorage.getItem('currentUser') || 'Enseignant';
+
+            // Get Global Competence Value
+            const globalCompValue = document.getElementById('global-competencies').value;
+
+            rows.forEach(row => {
+                const studentId = row.getAttribute('data-student-id');
+                const inputs = row.querySelectorAll('input[type="number"]');
+                const values = Array.from(inputs).map(i => i.value !== '' ? parseFloat(i.value) : null);
+                const competencies = globalCompValue;
+                const appreciation = row.querySelector('.row-app').value;
+
+                const index = grades.findIndex(g => g.studentId === studentId && g.subject === currentSelectedSubject && g.type === type);
+                const gradeData = {
+                    studentId,
+                    subject: currentSelectedSubject,
+                    type,
+                    values,
+                    competencies,
+                    appreciation,
+                    teacherName,
+                    updatedAt: new Date().toISOString()
+                };
+
+                if (index > -1) grades[index] = gradeData;
+                else grades.push(gradeData);
+            });
+
+            setLocal('localGrades', grades);
+            alert("Notes enregistrées avec succès !");
+        }
+
+        function exportGradesToExcel() {
+            const rows = Array.from(document.querySelectorAll('#grade-list-body tr'));
+            const className = currentSelectedClass;
+            const subject = currentSelectedSubject;
+            const type = document.getElementById('notes-type-select').value;
+
+            if (rows.length === 0) return alert("Aucune donnée à exporter.");
+
+            let totalSum = 0;
+            let totalCount = 0;
+
+            const data = rows.map((row, index) => {
+                const cells = row.cells;
+                const studentAvg = cells[8].innerText;
+                if (studentAvg !== '-') {
+                    totalSum += parseFloat(studentAvg);
+                    totalCount++;
+                }
+
+                return {
+                    "Rang": index + 1,
+                    "ID": cells[1].innerText,
+                    "Nom de l'élève": cells[2].innerText,
+                    "Dev 1": cells[3].querySelector('input').value,
+                    "Dev 2": cells[4].querySelector('input').value,
+                    "Dev 3": cells[5].querySelector('input').value,
+                    "Dev 4": cells[6].querySelector('input').value,
+                    "Dev 5": cells[7].querySelector('input').value,
+                    "Moyenne": studentAvg,
+                    "Appréciation": cells[9].querySelector('input').value
+                };
+            });
+
+            // Add Class average row
+            if (totalCount > 0) {
+                data.push({}); // Empty row
+                data.push({
+                    "Nom de l'élève": "MOYENNE DE LA CLASSE",
+                    "Moyenne": (totalSum / totalCount).toFixed(2)
+                });
+            }
+
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Notes");
+            XLSX.writeFile(wb, `Notes_${className}_${subject}_${type}.xlsx`);
+        }
+
+        // --- UTILS ---
+        function highlightWord(text, query) {
+            if (!query) return text;
+            const regex = new RegExp(`(${query})`, 'gi');
+            return text.replace(regex, '<span style="background:#fef08a; padding:0 2px; border-radius:2px;">$1</span>');
+        }
+
+        function handleLogout() {
+            if (confirm("Se déconnecter ?")) {
+                localStorage.removeItem('currentUser');
+                localStorage.removeItem('userRole');
+                window.location.href = 'login.html';
+            }
+        }
+
+        // --- INIT ---
+        window.onload = () => {
+            const currentUser = (localStorage.getItem('currentUser') || 'Enseignant').toUpperCase();
+            const currentInst = (localStorage.getItem('currentInstitution') || 'Établissement').toUpperCase();
+
+            document.getElementById('display-user-name').textContent = currentUser;
+            document.getElementById('institution-name-header').textContent = currentInst;
+
+            const sidebarInst = document.getElementById('display-sidebar-institution');
+            if (sidebarInst) sidebarInst.textContent = currentInst;
+
+            updateDashboardStats();
+            initCalendar();
+        };
+
+        function initCalendar() {
+            document.getElementById('selected-date-display').textContent = new Date().toLocaleDateString('fr-FR');
+
+            // Initializations
+            populateCheckIn();
+            loadSchedule();
+            initRealCalendar();
+        }
+
+        // --- CHECK-IN LOGIC ---
+        function populateCheckIn() {
+            const select = document.getElementById('check-in-class');
+            if (!select) return;
+            select.innerHTML = '<option value="">-- Choisir la classe --</option>';
+
+            const teacherId = getTeacherId();
+            const assignments = getLocal('localAssignments').filter(a => a.teacherId === teacherId);
+
+            // Unique classes
+            const uniqueClasses = [...new Set(assignments.map(a => a.className))];
+            uniqueClasses.forEach(c => {
+                select.innerHTML += `<option value="${c}">${c}</option>`;
+            });
+        }
+
+        function teacherCheckIn() {
+            const cls = document.getElementById('check-in-class').value;
+            if (!cls) return alert("Veuillez choisir une classe !");
+
+            // Mock Check-in
+            const now = new Date();
+            alert(`✅ Présence validée pour la classe ${cls} à ${now.toLocaleTimeString('fr-FR')}.\nBon cours !`);
+        }
+
+        // --- SCHEDULE LOGIC (MOCKED) ---
+        function loadSchedule() {
+            // Mock schedule based on assignments
+            const tbody = document.getElementById('schedule-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const teacherId = getTeacherId();
+            const assignments = getLocal('localAssignments').filter(a => a.teacherId === teacherId);
+
+            if (assignments.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:#94a3b8;">Aucun cours prévu aujourd\'hui</td></tr>';
+                return;
+            }
+
+            // Mock: Assign random times based on class index
+            const times = ["08:00 - 10:00", "10:00 - 12:00", "14:00 - 16:00", "16:00 - 18:00"];
+
+            // Sort by class name to be consistent
+            assignments.sort((a, b) => a.className.localeCompare(b.className));
+
+            // Take up to 4 classes for today's mock schedule
+            const todayClasses = assignments.slice(0, 4);
+
+            todayClasses.forEach((a, index) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="font-weight:bold; color:#64748b;">${index + 1}</td>
+                        <td style="font-weight:bold; color:#1e1b4b;">${a.className}</td>
+                        <td><span style="background:#e0e7ff; color:#4338ca; padding:2px 8px; border-radius:4px; font-size:0.85rem;">${a.subject}</span></td>
+                        <td style="font-weight:600;">${times[index] || "08:00 - 09:00"}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // --- CALENDAR LOGIC ---
+        let currentMonth = new Date().getMonth();
+        let currentYear = new Date().getFullYear();
+        const monthNames = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
+
+        function initRealCalendar() {
+            // Check metadata date if available or strictly stick to user request Jan 2026? 
+            // User requested "Janvier 2026", but system time is provided.
+            // Let's stick to system time for now, as it's cleaner. 
+            // Wait, request said "Janvier 2026 DYNAMISE". Maybe force 2026 if current is not?
+            // Metadata says 2026-01-31. So current IS Jan 2026.
+
+            updateCalendarHeader();
+            renderCalendarDays();
+
+            // Bind select change
+            document.getElementById('calendar-month-select').addEventListener('change', (e) => {
+                currentMonth = parseInt(e.target.value);
+                updateCalendarHeader();
+                renderCalendarDays();
+            });
+        }
+
+        function changeMonth(offset) {
+            currentMonth += offset;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            } else if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            updateCalendarHeader();
+            renderCalendarDays();
+        }
+
+        function updateCalendarHeader() {
+            const sel = document.getElementById('calendar-month-select');
+            if (sel) sel.value = currentMonth;
+            const yearSpan = document.getElementById('calendar-year-display');
+            if (yearSpan) yearSpan.textContent = currentYear;
+        }
+
+        function renderCalendarDays() {
+            const container = document.getElementById('calendar-days');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const firstDay = new Date(currentYear, currentMonth, 1).getDay(); // 0 = Sun
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+            // Adjust for Monday start if needed? Standard is Sun=0. Let's assume Sun start based on HTML headers (DIM, LUN...)
+
+            // Empty slots
+            for (let i = 0; i < firstDay; i++) {
+                container.innerHTML += `<div></div>`;
+            }
+
+            const today = new Date();
+            const isCurrentMonth = today.getMonth() === currentMonth && today.getFullYear() === currentYear;
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                let style = 'padding:8px; text-align:center; border-radius:6px; cursor:pointer; font-size:0.9rem;';
+                if (isCurrentMonth && d === today.getDate()) {
+                    style += 'background:#4338ca; color:white; font-weight:bold;'; // Active day
+                } else {
+                    style += 'background:#f8fafc; color:#334155;';
+                    // Hover effect via class usually, inline now
+                }
+
+                container.innerHTML += `<div style="${style}" onclick="alert('Rien de prévu le ${d} ${monthNames[currentMonth]}')">${d}</div>`;
+            }
+        }
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            if (sidebar) sidebar.classList.toggle('active');
+        }
+
+        function toggleMenu() {
+            const menu = document.getElementById('teacher-menu');
+            const userStatus = document.querySelector('.user-status');
+            if (menu) {
+                menu.classList.toggle('hidden');
+            }
+            if (userStatus) {
+                userStatus.classList.toggle('collapsed');
+            }
+        }
+        // })(); removed
+    </script>
+</body>
+
+</html>

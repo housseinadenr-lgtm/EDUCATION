@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration Centrale - MENFOP</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/settings.css">
+    <link rel="stylesheet" href="css/global-responsive.css">
+    <script src="js/responsive-manager.js"></script>
+    <style>
+        :root {
+            --admin-primary: #1e1b4b;
+            /* Deep Indigo */
+            --admin-accent: #fbbf24;
+            /* Amber/Gold */
+            --admin-bg: #f8fafc;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --white: #ffffff;
+            --sidebar-width: 280px;
+            --header-h: 80px;
+            --glass: rgba(255, 255, 255, 0.7);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--admin-bg);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(180deg, var(--admin-primary) 0%, #312e81 100%);
+            color: var(--white);
+            position: fixed;
+            height: 100vh;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            overflow-y: auto;
+            /* Added for vertical scrolling */
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 50px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 20px;
+        }
+
+        .sidebar-header img {
+            width: 50px;
+            background: white;
+            padding: 5px;
+            border-radius: 10px;
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .menu-list {
+            list-style: none;
+            flex: 1;
+        }
+
+        .menu-item {
+            margin-bottom: 8px;
+        }
+
+        .menu-link {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 14px 18px;
+            color: #cbd5e1;
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .menu-link:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--white);
+        }
+
+        .menu-link.active {
+            background: var(--admin-accent);
+            color: var(--admin-primary);
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+        }
+
+        .menu-link i {
+            font-size: 1.1rem;
+            width: 24px;
+        }
+
+        .sidebar-footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 20px;
+            margin-top: auto;
+        }
+
+        .btn-logout-admin {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 14px 18px;
+            color: #fca5a5;
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s;
+            font-weight: 500;
+            background: none;
+            border: none;
+            width: 100%;
+            cursor: pointer;
+            text-align: left;
+        }
+
+        .btn-logout-admin:hover {
+            background: rgba(239, 68, 68, 0.1);
+            color: #fff;
+        }
+
+        /* --- MAIN CONTENT --- */
+        .main {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 0 40px 40px;
+        }
+
+        .header {
+            height: var(--header-h);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 900;
+            margin: 0 -40px 30px;
+            padding: 0 40px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .welcome-text h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .admin-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--white);
+            padding: 8px 16px;
+            border-radius: 50px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .admin-profile img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        /* --- STATS GRID --- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: var(--white);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border: 1px solid #f1f5f9;
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .icon-principals {
+            background: #eff6ff;
+            color: #3b82f6;
+        }
+
+        .icon-teachers {
+            background: #fdf2f8;
+            color: #db2777;
+        }
+
+        .icon-logs {
+            background: #ecfdf5;
+            color: #10b981;
+        }
+
+        .stat-info .label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .stat-info .value {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        /* --- TABLES & CARDS --- */
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            border: 1px solid #f1f5f9;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .btn-add {
+            background: var(--admin-primary);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: 0.3s;
+        }
+
+        .btn-add:hover {
+            background: #312e81;
+            transform: scale(1.02);
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 15px 20px;
+            background: #f8fafc;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        td {
+            padding: 18px 20px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.95rem;
+        }
+
+        .credential-badge {
+            background: #f1f5f9;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-weight: 600;
+            color: var(--admin-primary);
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-icon {
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-edit:hover {
+            background: #f0f9ff;
+            color: #0ea5e9;
+            border-color: #0ea5e9;
+        }
+
+        .btn-delete:hover {
+            background: #fef2f2;
+            color: #ef4444;
+            border-color: #ef4444;
+        }
+
+        /* --- MODAL --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal {
+            background: var(--white);
+            width: 500px;
+            border-radius: 24px;
+            padding: 35px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes modalPop {
+            from {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            background: #f8fafc;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: var(--admin-accent);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.1);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn-modal {
+            flex: 1;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            border: none;
+        }
+
+        .btn-cancel {
+            background: #f1f5f9;
+            color: var(--text-muted);
+        }
+
+        .btn-save {
+            background: var(--admin-primary);
+            color: white;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <img src="https://menfop.gouv.dj/wp-content/uploads/2021/05/cropped-logo-menfop-1.png" alt="Logo">
+            <h2>Admin Hub</h2>
+        </div>
+
+        <ul class="menu-list">
+            <li class="menu-item"><a href="#" class="menu-link active" onclick="switchView('dashboard', this)"><i
+                        class="fas fa-home"></i> Vue d'ensemble</a></li>
+            <li class="menu-item"><a href="#" class="menu-link" onclick="switchView('principals', this)"><i
+                        class="fas fa-user-shield"></i> Gestion Principaux</a></li>
+            <li class="menu-item"><a href="#" class="menu-link" onclick="switchView('teachers', this)"><i
+                        class="fas fa-chalkboard-teacher"></i> Gestion Enseignants</a></li>
+            <li class="menu-item"><a href="#" class="menu-link" onclick="switchView('logs', this)"><i
+                        class="fas fa-history"></i> Journaux d'activité</a></li>
+            <li class="menu-item"><a href="#" class="menu-link" onclick="switchView('config', this)"><i
+                        class="fas fa-calendar-alt"></i> Paramètres Saisies</a></li>
+            <li class="menu-item"><a href="#" class="menu-link" onclick="switchView('system-settings', this)"><i
+                        class="fas fa-cog"></i> Paramètres Système</a></li>
+        </ul>
+
+        <div class="sidebar-footer">
+
+            <button class="btn-logout-admin" onclick="handleLogout()">
+                <i class="fas fa-sign-out-alt"></i> Déconnexion
+            </button>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="main">
+        <header class="header">
+            <i class="fas fa-bars hamburger-toggle"></i>
+            <div class="welcome-text">
+                <h1>Tableau de Bord Administrateur</h1>
+            </div>
+            <div class="admin-profile">
+                <div style="text-align: right;" class="hide-on-mobile">
+                    <div style="font-weight: 700; font-size: 0.9rem;" id="display-admin-name">ADMIN CENTRAL</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Session active</div>
+                </div>
+                <img src="https://ui-avatars.com/api/?name=Admin+MENFOP&background=1e1b4b&color=fff" alt="Avatar"
+                    id="display-admin-avatar">
+            </div>
+        </header>
+
+        <!-- VIEW: DASHBOARD -->
+        <div id="view-dashboard" class="view active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon icon-principals"><i class="fas fa-user-shield"></i></div>
+                    <div class="stat-info">
+                        <div class="label">Principaux</div>
+                        <div class="value" id="count-principals">0</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-teachers"><i class="fas fa-chalkboard-teacher"></i></div>
+                    <div class="stat-info">
+                        <div class="label">Enseignants</div>
+                        <div class="value" id="count-teachers">0</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-logs" style="background:#fef9c3; color:#a16207;"><i
+                            class="fas fa-users-viewfinder"></i></div>
+                    <div class="stat-info">
+                        <div class="label">Effectif Élèves</div>
+                        <div class="value" id="count-students">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 style="font-size: 1.2rem;">Dernières créations de comptes</h2>
+                </div>
+                <div class="table-responsive">
+                    <table id="recent-accounts-table">
+                        <thead>
+                            <tr>
+                                <th>Identifier</th>
+                                <th>Nom</th>
+                                <th>Rôle</th>
+                                <th>Date Création</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-accounts-body">
+                            <!-- Injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: PRINCIPALS -->
+        <div id="view-principals" class="view">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Liste des Principaux</h2>
+                    <button class="btn-add" onclick="openPrincipalModal()"><i class="fas fa-plus"></i> Nouveau
+                        Principal</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID Admin</th>
+                                <th>Nom Complet</th>
+                                <th>Établissement</th>
+                                <th>Contact</th>
+                                <th>Identifiant (User)</th>
+                                <th>Mot de passe</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="principals-list-body">
+                            <!-- Injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: TEACHERS -->
+        <div id="view-teachers" class="view">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Liste des Enseignants</h2>
+                    <button class="btn-add" onclick="openTeacherModal()"><i class="fas fa-plus"></i> Nouvel
+                        Enseignant</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID Code</th>
+                                <th>Nom Complet</th>
+                                <th>Matière(s)</th>
+                                <th>Contact</th>
+                                <th>Établissement</th>
+                                <th>Identifiant (User)</th>
+                                <th>Mot de passe</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="teachers-list-body">
+                            <!-- Injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: CONFIG -->
+        <div id="view-config" class="view">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-cog"></i> Configuration des Saisies</h2>
+                </div>
+                <div style="max-width: 700px;">
+                    <p style="margin-bottom: 25px; color: var(--text-muted); font-size: 0.95rem;">
+                        Contrôlez les périodes de saisie des notes pour tous les établissements.
+                        Les enseignants ne pourront pas enregistrer de notes en dehors de la plage définie.
+                    </p>
+
+                    <form id="grading-config-form" onsubmit="saveGradingConfig(event)">
+                        <!-- Global Lock Switch -->
+                        <div class="form-group"
+                            style="background: #fee2e2; padding: 15px; border-radius: 8px; border: 1px solid #fecaca; margin-bottom: 25px;">
+                            <label
+                                style="color: #991b1b; font-weight: bold; display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                <input type="checkbox" id="conf-global-lock" style="width: 20px; height: 20px;">
+                                Verrouillage Global
+                            </label>
+                            <small style="color: #7f1d1d; display: block; margin-top: 5px; margin-left: 30px;">
+                                Si activé, aucune saisie n'est possible, quelles que soient les dates.
+                            </small>
+                        </div>
+
+                        <!-- Trimesters Config Table -->
+                        <div class="table-responsive" style="margin-bottom: 25px;">
+                            <table class="config-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 20%;">Trimestre</th>
+                                        <th style="width: 40%;">Date d'Ouverture</th>
+                                        <th style="width: 40%;">Date de Fermeture</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="font-weight: bold;">Trimestre 1</td>
+                                        <td><input type="datetime-local" id="conf-t1-start" class="form-control"
+                                                style="background: white;"></td>
+                                        <td><input type="datetime-local" id="conf-t1-end" class="form-control"
+                                                style="background: white;"></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: bold;">Trimestre 2</td>
+                                        <td><input type="datetime-local" id="conf-t2-start" class="form-control"
+                                                style="background: white;"></td>
+                                        <td><input type="datetime-local" id="conf-t2-end" class="form-control"
+                                                style="background: white;"></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: bold;">Trimestre 3</td>
+                                        <td><input type="datetime-local" id="conf-t3-start" class="form-control"
+                                                style="background: white;"></td>
+                                        <td><input type="datetime-local" id="conf-t3-end" class="form-control"
+                                                style="background: white;"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 30px;">
+                            <label><i class="fas fa-clock"></i> Délai de grâce (jours)</label>
+                            <input type="number" id="conf-delay-days" class="form-control" placeholder="7">
+                        </div>
+
+                        <div style="padding-top: 20px; border-top: 1px solid #f1f5f9;">
+                            <button type="submit" class="btn-add" style="width: auto; padding: 12px 30px;">
+                                <i class="fas fa-save"></i> Enregistrer la Configuration
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: SYSTEM SETTINGS -->
+        <div id="view-system-settings" class="view">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-cog"></i> Paramètres du Système</h2>
+                </div>
+
+                <div style="max-width: 600px;">
+                    <!-- Display Preferences -->
+                    <div style="margin-bottom: 40px;">
+                        <h3
+                            style="font-size: 1.1rem; margin-bottom: 20px; border-bottom: 2px solid var(--admin-accent); display: inline-block; padding-bottom: 5px;">
+                            Préférences d'affichage
+                        </h3>
+
+                        <div class="settings-row">
+                            <div class="settings-info">
+                                <h4>Mode Nuit (Sombre)</h4>
+                                <p>Activer le thème sombre pour plus de confort visuel.</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="theme-toggle">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Language Preferences -->
+                    <div>
+                        <h3
+                            style="font-size: 1.1rem; margin-bottom: 20px; border-bottom: 2px solid var(--admin-accent); display: inline-block; padding-bottom: 5px;">
+                            Langue de l'interface
+                        </h3>
+
+                        <div class="settings-row">
+                            <div class="settings-info">
+                                <h4>Langue par défaut</h4>
+                                <p>Changer la langue de l'ensemble de l'interface.</p>
+                            </div>
+                            <select id="language-select" class="form-control" style="width: 200px;">
+                                <option value="fr">Français</option>
+                                <option value="ar">العربية (Arabe)</option>
+                                <option value="en">English (Anglais)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #f1f5f9;">
+                        <button class="btn-add" onclick="alert('Paramètres enregistrés !')">
+                            <i class="fas fa-check"></i> Enregistrer les préférences
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MODAL: PRINCIPAL -->
+    <div id="principal-modal" class="modal-overlay">
+        <div class="modal">
+            <h2 class="modal-title" id="p-modal-title">Nouveau Principal</h2>
+            <form id="principal-form">
+                <input type="hidden" id="p-id">
+                <div class="form-group">
+                    <label>Nom Complet</label>
+                    <input type="text" id="p-name" class="form-control" placeholder="Entrer le nom complet" required>
+                </div>
+                <div class="form-group">
+                    <label>Établissement assigné</label>
+                    <input type="text" id="p-school" class="form-control" placeholder="Ex: CEM HAYEL A DÉCLARÉ"
+                        required>
+                </div>
+                <div class="form-group">
+                    <label>Contact (GSM)</label>
+                    <input type="text" id="p-contact" class="form-control" placeholder="Ex: +253 77 12 34 56">
+                </div>
+                <div class="form-group">
+                    <label>Mot de passe</label>
+                    <input type="text" id="p-password" class="form-control"
+                        placeholder="Par défaut: ID Admin (ex: PRIN-...)">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-modal btn-cancel" onclick="closeModals()">Annuler</button>
+                    <button type="submit" class="btn-modal btn-save">Générer Identifiants</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: TEACHER -->
+    <div id="teacher-modal" class="modal-overlay">
+        <div class="modal">
+            <h2 class="modal-title" id="t-modal-title">Nouvel Enseignant</h2>
+            <form id="teacher-form">
+                <input type="hidden" id="t-id">
+                <div class="form-group">
+                    <label>Nom Complet</label>
+                    <input type="text" id="t-name" class="form-control" placeholder="Nom de l'enseignant" required>
+                </div>
+                <div class="form-group">
+                    <label>Matière Principale</label>
+                    <select id="t-subject" class="form-control" required>
+                        <option value="MATHS">Mathématiques</option>
+                        <option value="FRANCAIS">Français</option>
+                        <option value="H-G">Histoire-Géo</option>
+                        <option value="ARABE">Arabe</option>
+                        <option value="PC">Physique-Chimie</option>
+                        <option value="SVT">SVT</option>
+                        <option value="ANG">Anglais</option>
+                        <option value="EPS">EPS</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Contact</label>
+                    <input type="text" id="t-contact" class="form-control" placeholder="Numéro de téléphone">
+                </div>
+                <div class="form-group">
+                    <label>Assigner à l'Établissement</label>
+                    <select id="t-school" class="form-control" required>
+                        <option value="">-- Sélectionner un établissement --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Mot de passe</label>
+                    <input type="text" id="t-password" class="form-control"
+                        placeholder="Par défaut: ID Admin (ex: TEA-...)">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-modal btn-cancel" onclick="closeModals()">Annuler</button>
+                    <button type="submit" class="btn-modal btn-save">Créer Identifiants</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // --- 0. ROLE GUARD & SESSION VALIDITY ---
+        (function () {
+            const currentRole = localStorage.getItem('userRole');
+            const currentName = (localStorage.getItem('currentUser') || "").trim();
+
+            if (currentRole !== 'admin') {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const admins = JSON.parse(localStorage.getItem('localAdmins') || '[]');
+            const adminExists = admins.some(a => a.name && a.name.trim().toLowerCase() === currentName.toLowerCase());
+
+            if (!adminExists && currentName.toLowerCase() !== 'administrateur central') {
+                console.error("Session invalide : Administrateur non trouvé.");
+                localStorage.removeItem('currentUser');
+                localStorage.removeItem('userRole');
+                localStorage.removeItem('currentUserId');
+                window.location.href = 'login.html';
+            }
+        })();
+
+        // --- DATA PERSISTENCE ---
+        const getLocal = (key) => JSON.parse(localStorage.getItem(key) || '[]');
+        const setLocal = (key, val) => localStorage.setItem(key, JSON.stringify(val));
+
+        // --- LOGOUT LOGIC ---
+        function handleLogout() {
+            if (confirm("Confirmer la déconnexion de la session administrateur ?")) {
+                localStorage.removeItem('currentUser');
+                localStorage.removeItem('userRole');
+                window.location.href = 'login.html';
+            }
+        }
+
+        // --- NAVIGATION ---
+        function switchView(viewId, element) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById('view-' + viewId).classList.add('active');
+
+            document.querySelectorAll('.menu-link').forEach(l => l.classList.remove('active'));
+            if (element) element.classList.add('active');
+
+            if (viewId === 'dashboard') loadDashboard();
+            if (viewId === 'principals') loadPrincipals();
+            if (viewId === 'teachers') loadTeachers();
+            if (viewId === 'config') loadConfig();
+        }
+
+        // --- DASHBOARD LOGIC ---
+        function loadDashboard() {
+            const principals = getLocal('localPrincipals');
+            const teachers = getLocal('localTeachers');
+            const students = getLocal('localStudents');
+
+            document.getElementById('count-principals').textContent = principals.length;
+            document.getElementById('count-teachers').textContent = teachers.length;
+            document.getElementById('count-students').textContent = students.length;
+
+            const tbody = document.getElementById('recent-accounts-body');
+            tbody.innerHTML = '';
+
+            const allAccounts = [
+                ...principals.map(p => ({ ...p, role: 'Principal', type: 'principal' })),
+                ...teachers.map(t => ({ ...t, role: 'Enseignant', type: 'teacher' }))
+            ].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+            const recent = allAccounts.slice(0, 5);
+
+            if (recent.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#64748b;">Aucun compte créé récemment</td></tr>';
+            } else {
+                recent.forEach(item => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><span class="credential-badge">${item.id}</span></td>
+                            <td style="font-weight:600;">${item.name}</td>
+                            <td>${item.role}</td>
+                            <td>${item.createdAt ? new Date(item.createdAt).toLocaleDateString() : '--'}</td>
+                            <td><span style="color:#10b981;"><i class="fas fa-check-circle"></i> Actif</span></td>
+                        </tr>
+                    `;
+                });
+            }
+        }
+
+        // --- CONFIG LOGIC ---
+        async function loadConfig() {
+            try {
+                // Try fetching from API first, fallback to localStorage
+                const response = await fetch('/admin/config');
+                let config = {};
+                if (response.ok) {
+                    config = await response.json();
+                } else {
+                    config = JSON.parse(localStorage.getItem('gradingConfig') || '{}');
+                }
+
+                // Trimesters defaults
+                const t1 = config.trimesters?.T1 || {};
+                const t2 = config.trimesters?.T2 || {};
+                const t3 = config.trimesters?.T3 || {};
+
+                const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = toDatetimeLocal(val); };
+
+                const toDatetimeLocal = (val) => {
+                    if (!val) return "";
+                    // If already YYYY-MM-DDTHH:mm format, keep it
+                    if (val.length === 16 && val.indexOf('T') === 10) return val;
+                    // If ISO string with Z or seconds, slice it
+                    if (val.includes('T')) return val.substring(0, 16);
+                    return val;
+                };
+
+                setVal('conf-t1-start', t1.start || '');
+                setVal('conf-t1-end', t1.end || '');
+                setVal('conf-t2-start', t2.start || '');
+                setVal('conf-t2-end', t2.end || '');
+                setVal('conf-t3-start', t3.start || '');
+                setVal('conf-t3-end', t3.end || '');
+
+                const lockEl = document.getElementById('conf-global-lock');
+                if (lockEl) lockEl.checked = !!config.globalLock;
+
+                setVal('conf-delay-days', config.gradingDelayDays || 7);
+            } catch (e) {
+                console.error("Error loading config", e);
+            }
+        }
+
+        async function saveGradingConfig(event) {
+            event.preventDefault();
+
+            const config = {
+                globalLock: document.getElementById('conf-global-lock').checked,
+                trimesters: {
+                    "T1": {
+                        "name": "Trimestre 1",
+                        "start": document.getElementById('conf-t1-start').value,
+                        "end": document.getElementById('conf-t1-end').value
+                    },
+                    "T2": {
+                        "name": "Trimestre 2",
+                        "start": document.getElementById('conf-t2-start').value,
+                        "end": document.getElementById('conf-t2-end').value
+                    },
+                    "T3": {
+                        "name": "Trimestre 3",
+                        "start": document.getElementById('conf-t3-start').value,
+                        "end": document.getElementById('conf-t3-end').value
+                    }
+                },
+                gradingDelayDays: parseInt(document.getElementById('conf-delay-days').value) || 0
+            };
+
+            // Save to LocalStorage (Legacy/Demo)
+            localStorage.setItem('gradingConfig', JSON.stringify(config));
+
+            // Save to API (Real Backend)
+            try {
+                const res = await fetch('/admin/config', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+                if (res.ok) {
+                    alert("Configuration enregistrée avec succès (Serveur & Local) !");
+                } else {
+                    alert("Config sauvegardée en local, mais erreur serveur.");
+                }
+            } catch (e) {
+                alert("Sauvegardé en local uniquement (Pas de connexion serveur).");
+            }
+        }
+
+        // --- PRINCIPALS LOGIC ---
+        function loadPrincipals() {
+            const principals = getLocal('localPrincipals');
+            const tbody = document.getElementById('principals-list-body');
+            tbody.innerHTML = '';
+
+            if (principals.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:#64748b;">Aucun principal enregistré</td></tr>';
+            } else {
+                principals.forEach(p => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><span class="credential-badge">${p.id}</span></td>
+                            <td style="font-weight:600;">${p.name}</td>
+                            <td>${p.school || '--'}</td>
+                            <td>${p.contact || '--'}</td>
+                            <td><span class="credential-badge">${p.identifier}</span></td>
+                            <td><span class="credential-badge" style="background:#fef3c7; color:#92400e;">${p.password || p.id}</span></td>
+                            <td>
+                                <div class="action-btns">
+                                    <button class="btn-icon btn-edit" onclick="editPrincipal('${p.id}')"><i class="fas fa-edit"></i></button>
+                                    <button class="btn-icon btn-delete" onclick="deletePrincipal('${p.id}')"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+        }
+
+        function openPrincipalModal() {
+            document.getElementById('principal-form').reset();
+            document.getElementById('p-id').value = '';
+            document.getElementById('p-modal-title').textContent = "Nouveau Principal";
+            document.getElementById('principal-modal').style.display = 'flex';
+        }
+
+        document.getElementById('principal-form').onsubmit = function (e) {
+            e.preventDefault();
+            const principals = getLocal('localPrincipals');
+            const id = document.getElementById('p-id').value || 'PRIN-' + Math.floor(1000 + Math.random() * 9000);
+            const name = document.getElementById('p-name').value;
+            const identifier = name.toLowerCase().replace(/\s+/g, '.') + Math.floor(Math.random() * 100);
+
+            const principalData = {
+                id: id,
+                name: name,
+                school: document.getElementById('p-school').value,
+                contact: document.getElementById('p-contact').value,
+                password: document.getElementById('p-password').value || id,
+                identifier: identifier,
+                createdAt: new Date().toISOString()
+            };
+
+            const index = principals.findIndex(p => p.id === id);
+            if (index > -1) {
+                principals[index] = principalData;
+            } else {
+                principals.push(principalData);
+            }
+
+            setLocal('localPrincipals', principals);
+            closeModals();
+            loadPrincipals();
+            alert("Principal enregistré avec succès !");
+        };
+
+        function editPrincipal(id) {
+            const principals = getLocal('localPrincipals');
+            const p = principals.find(p => p.id === id);
+            if (p) {
+                document.getElementById('p-id').value = p.id;
+                document.getElementById('p-name').value = p.name;
+                document.getElementById('p-school').value = p.school;
+                document.getElementById('p-contact').value = p.contact;
+                document.getElementById('p-password').value = p.password;
+                document.getElementById('p-modal-title').textContent = "Modifier Principal";
+                document.getElementById('principal-modal').style.display = 'flex';
+            }
+        }
+
+        function deletePrincipal(id) {
+            if (confirm("Supprimer ce compte principal ?")) {
+                let principals = getLocal('localPrincipals');
+                principals = principals.filter(p => p.id !== id);
+                setLocal('localPrincipals', principals);
+                loadPrincipals();
+            }
+        }
+
+        // --- TEACHERS LOGIC ---
+        function loadTeachers() {
+            const teachers = getLocal('localTeachers');
+            const tbody = document.getElementById('teachers-list-body');
+            tbody.innerHTML = '';
+
+            if (teachers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:20px; color:#64748b;">Aucun enseignant enregistré</td></tr>';
+            } else {
+                teachers.forEach(t => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><span class="credential-badge">${t.id}</span></td>
+                            <td style="font-weight:600;">${t.name}</td>
+                            <td>${t.subject || '--'}</td>
+                            <td>${t.contact || '--'}</td>
+                            <td style="font-weight:600; color:var(--admin-primary);">${t.school || '--'}</td>
+                            <td><span class="credential-badge">${t.identifier}</span></td>
+                            <td><span class="credential-badge" style="background:#fef3c7; color:#92400e;">${t.password || t.id}</span></td>
+                            <td>
+                                <div class="action-btns">
+                                    <button class="btn-icon btn-edit" onclick="editTeacher('${t.id}')"><i class="fas fa-edit"></i></button>
+                                    <button class="btn-icon btn-delete" onclick="deleteTeacher('${t.id}')"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+        }
+
+        function openTeacherModal() {
+            document.getElementById('teacher-form').reset();
+            document.getElementById('t-id').value = '';
+            document.getElementById('t-modal-title').textContent = "Nouvel Enseignant";
+
+            const principals = getLocal('localPrincipals');
+            const schoolSelect = document.getElementById('t-school');
+            schoolSelect.innerHTML = '<option value="">-- Sélectionner un établissement --</option>';
+            principals.forEach(p => {
+                schoolSelect.innerHTML += `<option value="${p.id}">${p.school || p.name}</option>`;
+            });
+            document.getElementById('teacher-modal').style.display = 'flex';
+        }
+
+        document.getElementById('teacher-form').onsubmit = function (e) {
+            e.preventDefault();
+            const teachers = getLocal('localTeachers');
+            const id = document.getElementById('t-id').value || 'TEA-' + Math.floor(1000 + Math.random() * 9000);
+            const name = document.getElementById('t-name').value;
+            const identifier = name.toLowerCase().replace(/\s+/g, '.') + Math.floor(Math.random() * 100);
+
+            const schoolSelect = document.getElementById('t-school');
+            const selectedSchoolText = schoolSelect.options[schoolSelect.selectedIndex].text;
+
+            const teacherData = {
+                id: id,
+                name: name,
+                subject: document.getElementById('t-subject').value,
+                contact: document.getElementById('t-contact').value,
+                principalId: schoolSelect.value,
+                school: selectedSchoolText,
+                password: document.getElementById('t-password').value || id,
+                identifier: identifier,
+                createdAt: new Date().toISOString()
+            };
+
+            const index = teachers.findIndex(t => t.id === id);
+            if (index > -1) {
+                teachers[index] = teacherData;
+            } else {
+                teachers.push(teacherData);
+            }
+
+            setLocal('localTeachers', teachers);
+            closeModals();
+            loadTeachers();
+            alert("Enseignant enregistré avec succès !");
+        };
+
+        function editTeacher(id) {
+            const teachers = getLocal('localTeachers');
+            const t = teachers.find(t => t.id === id);
+            if (t) {
+                openTeacherModal(); // To populate school list
+                document.getElementById('t-id').value = t.id;
+                document.getElementById('t-name').value = t.name;
+                document.getElementById('t-subject').value = t.subject;
+                document.getElementById('t-contact').value = t.contact;
+                document.getElementById('t-school').value = t.principalId;
+                document.getElementById('t-password').value = t.password;
+                document.getElementById('t-modal-title').textContent = "Modifier Enseignant";
+            }
+        }
+
+        function deleteTeacher(id) {
+            if (confirm("Supprimer ce compte enseignant ?")) {
+                let teachers = getLocal('localTeachers');
+                teachers = teachers.filter(t => t.id !== id);
+                setLocal('localTeachers', teachers);
+                loadTeachers();
+            }
+        }
+
+        // --- GLOBAL ---
+        function closeModals() {
+            document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
+        }
+
+        // Init
+        loadDashboard();
+        loadConfig();
+
+        // Dynamic Name Init
+        const currentUser = localStorage.getItem('currentUser');
+        if (currentUser) {
+            document.getElementById('display-admin-name').textContent = currentUser.toUpperCase();
+            document.getElementById('display-admin-avatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser)}&background=1e1b4b&color=fff`;
+        }
+    </script>
+
+    <script src="js/settings-manager.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Management System</title>
+    <link rel="stylesheet" href="css/global-responsive.css">
+    <script src="js/responsive-manager.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #34495e;
+            --accent: #3498db;
+            --success: #27ae60;
+            --danger: #c0392b;
+            --light: #ecf0f1;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f4f6f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background: var(--primary);
+            color: white;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar h2 {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--secondary);
+            padding-bottom: 1rem;
+        }
+
+        .menu-item {
+            padding: 10px;
+            cursor: pointer;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            transition: background 0.2s;
+        }
+
+        .menu-item:hover,
+        .menu-item.active {
+            background: var(--secondary);
+        }
+
+        /* Main Content */
+        .main {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        /* Cards & Forms */
+        .card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 1.5rem;
+        }
+
+        h3 {
+            margin-top: 0;
+            color: var(--primary);
+            border-bottom: 2px solid var(--light);
+            padding-bottom: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .response-area {
+            background: #2d3436;
+            color: #55efc4;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-top: 1rem;
+            font-family: monospace;
+            white-space: pre-wrap;
+            display: none;
+        }
+
+        /* Identity Bar */
+        .identity-bar {
+            background: white;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>🏫 School Manager</h2>
+        <div class="menu-item active" onclick="showSection('dashboard')">Tableau de bord</div>
+        <div class="menu-item" onclick="showSection('admin-school')">Administration École</div>
+        <div class="menu-item" onclick="showSection('academic')">Gestion Académique</div>
+        <div class="menu-item" onclick="showSection('users')">Utilisateurs</div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main">
+
+        <!-- Identity Simulation Bar -->
+        <div class="identity-bar">
+            <i class="fas fa-bars hamburger-toggle"></i>
+            <div>
+                Actuellement connecté en tant que :
+                <strong id="current-role-display">Guest</strong>
+            </div>
+            <div>
+                <select id="role-switcher" onchange="switchRole(this.value)">
+                    <option value="guest">Visiteur</option>
+                    <option value="admin">Administrateur</option>
+                    <option value="principal">Principal</option>
+                    <option value="manager">Manager</option>
+                    <option value="teacher">Professeur</option>
+                    <option value="student">Élève</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- SECTIONS -->
+
+        <!-- 1. Dashboard -->
+        <div id="dashboard" class="section active">
+            <div class="card">
+                <h3>Bienvenue sur le Système de Gestion Scolaire</h3>
+                <p>Utilisez le menu de gauche pour naviguer. N'oubliez pas de simuler le bon rôle via le sélecteur en
+                    haut à droite pour avoir les permissions nécessaires.</p>
+                <ul>
+                    <li><strong>Admin École</strong> : Créer écoles, classes.</li>
+                    <li><strong>Académique</strong> : Créer matières, ajouter notes, voir bulletins.</li>
+                    <li><strong>Utilisateurs</strong> : Créer profs, élèves, admins.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 2. Admin School -->
+        <div id="admin-school" class="section">
+            <div class="card">
+                <h3>Créer une École</h3>
+                <div class="form-group">
+                    <label>Nom de l'école</label>
+                    <input type="text" id="school-name" placeholder="Ex: Lycée Victor Hugo">
+                </div>
+                <button class="btn-primary" onclick="createSchool()">Créer École</button>
+                <div id="res-school" class="response-area"></div>
+            </div>
+
+            <div class="card">
+                <h3>Créer une Classe</h3>
+                <div class="form-group">
+                    <label>Nom de la classe</label>
+                    <input type="text" id="class-name" placeholder="Ex: 6ème B">
+                </div>
+                <button class="btn-primary" onclick="createClass()">Créer Classe</button>
+                <div id="res-class" class="response-area"></div>
+            </div>
+        </div>
+
+        <!-- 3. Academic -->
+        <div id="academic" class="section">
+            <div class="card">
+                <h3>Saisie de Notes (Prof)</h3>
+                <div class="form-group">
+                    <label>ID Élève</label>
+                    <input type="text" id="grade-student-id" placeholder="ID de l'élève">
+                </div>
+                <div class="form-group">
+                    <label>ID Matière</label>
+                    <input type="text" id="grade-subject-id" placeholder="ID de la matière">
+                </div>
+                <div class="form-group">
+                    <label>Note (/20)</label>
+                    <input type="number" id="grade-value" min="0" max="20">
+                </div>
+                <button class="btn-success" onclick="addGrade()">Enregistrer Note</button>
+                <div id="res-grade" class="response-area"></div>
+            </div>
+
+            <div class="card">
+                <h3>Bulletin de Notes</h3>
+                <div class="form-group">
+                    <label>ID Élève</label>
+                    <input type="text" id="report-student-id" placeholder="Votre ID ou celui de l'élève">
+                </div>
+                <button class="btn-primary" onclick="getReport()">Voir Bulletin</button>
+                <div id="res-report" class="response-area"></div>
+            </div>
+        </div>
+
+        <!-- 4. Users -->
+        <div id="users" class="section">
+            <div class="card">
+                <h3>Créer un Utilisateur Spécial</h3>
+                <div class="form-group">
+                    <label>Nom d'utilisateur</label>
+                    <input type="text" id="user-name">
+                </div>
+                <div class="form-group">
+                    <label>Rôle</label>
+                    <select id="user-role">
+                        <option value="student">Élève</option>
+                        <option value="teacher">Professeur</option>
+                        <option value="principal">Principal</option>
+                        <option value="admin">Administrateur</option>
+                    </select>
+                </div>
+                <button class="btn-danger" onclick="createUser()">Créer Utilisateur</button>
+                <div id="res-user" class="response-area"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // State
+        let currentRole = 'guest';
+        let currentUsername = 'Visiteur';
+
+        // UI Helpers
+        function showSection(id) {
+            document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+
+            document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function switchRole(role) {
+            currentRole = role;
+            // Fake usernames for simulation
+            const names = {
+                'admin': 'Directeur',
+                'teacher': 'Prof. Tournesol',
+                'student': 'Alice',
+                'manager': 'Superviseur',
+                'principal': 'M. Le Proviseur',
+                'guest': 'Visiteur'
+            };
+            currentUsername = names[role] || 'User';
+            document.getElementById('current-role-display').textContent = `${currentUsername} (${role.toUpperCase()})`;
+        }
+
+        async function apiCall(method, url, data) {
+            const headers = {
+                'Content-Type': 'application/json',
+                'x-user-role': currentRole,
+                'x-user-name': currentUsername
+            };
+
+            try {
+                const options = { method, headers };
+                if (data) options.body = JSON.stringify(data);
+
+                const res = await fetch(url, options);
+                const json = await res.json();
+                return { status: res.status, body: json };
+            } catch (e) {
+                return { status: 500, body: { error: e.message } };
+            }
+        }
+
+        function showResult(elementId, res) {
+            const el = document.getElementById(elementId);
+            el.style.display = 'block';
+            el.textContent = `Status: ${res.status}\n\n${JSON.stringify(res.body, null, 2)}`;
+            el.style.color = res.status >= 200 && res.status < 300 ? '#55efc4' : '#ff7675';
+        }
+
+        // --- Actions ---
+
+        async function createSchool() {
+            const name = document.getElementById('school-name').value;
+            const res = await apiCall('POST', '/admin/school/schools', { name });
+            showResult('res-school', res);
+        }
+
+        async function createClass() {
+            const name = document.getElementById('class-name').value;
+            // Note: schoolId est hardcodé ou optionnel pour la démo si non géré par UI
+            const res = await apiCall('POST', '/admin/school/classes', { name });
+            showResult('res-class', res);
+        }
+
+        async function addGrade() {
+            const studentId = document.getElementById('grade-student-id').value;
+            const subjectId = document.getElementById('grade-subject-id').value;
+            const value = document.getElementById('grade-value').value;
+
+            const res = await apiCall('POST', '/academic/grades', {
+                studentId, subjectId, value: Number(value)
+            });
+            showResult('res-grade', res);
+        }
+
+        async function getReport() {
+            const studentId = document.getElementById('report-student-id').value;
+            const res = await apiCall('GET', `/academic/report-card/${studentId}`);
+            showResult('res-report', res);
+        }
+
+        async function createUser() {
+            const username = document.getElementById('user-name').value;
+            const role = document.getElementById('user-role').value;
+
+            const res = await apiCall('POST', '/admin/users-adv/create', { username, role });
+            showResult('res-user', res);
+        }
+
+        // Init
+        switchRole('guest');
+    </script>
+</body>
+
+</html>
